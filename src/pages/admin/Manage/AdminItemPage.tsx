@@ -3,7 +3,7 @@ function AdminItemPage() {
 
     return (
         <div>
-У розробці
+    Сторінка у розробці!
         </div>
     );
 }
