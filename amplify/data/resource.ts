@@ -27,6 +27,7 @@ const schema = a.schema({
             allow.groups([accessLevel.member]).to(["read"]),
             allow.owner().to(["read", "update"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
 
 
@@ -42,6 +43,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
 
     Transaction: a
@@ -75,6 +77,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
 
 
@@ -92,6 +95,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
     Tag: a
         .model({
@@ -102,6 +106,7 @@ const schema = a.schema({
         allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
         allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
         allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
     ]),
     AssetTag: a
         .model({
@@ -114,6 +119,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
     AssetCategory: a
         .model({
@@ -124,6 +130,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
     AssetSubCategory: a
         .model({
@@ -136,6 +143,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
 
 });

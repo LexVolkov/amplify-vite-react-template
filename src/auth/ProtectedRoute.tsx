@@ -12,9 +12,11 @@ interface ProtectedRouteProps {
     groups: string[];
     children: ReactElement;
 }
-const guest:string = 'GUEST';
+
+const guest: string = 'GUEST';
 const client = generateClient<Schema>();
 type Nullable<T> = T | null;
+
 interface Setting {
     id: string;
     name: string;
@@ -27,7 +29,8 @@ interface Setting {
 interface SettingsObject {
     [key: string]: Setting;
 }
-const ProtectedRoute = ({ groups, children }: ProtectedRouteProps) => {
+
+const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
     const user = useSelector((state: RootState) => state.user);
     const game = useSelector((state: RootState) => state.game);
     const dispatch = useDispatch();
@@ -48,11 +51,16 @@ const ProtectedRoute = ({ groups, children }: ProtectedRouteProps) => {
                 userData.userId = currentUser.userId;
                 userData.username = currentUser.username;
                 const groups = session.tokens.accessToken.payload['cognito:groups'] || [];
+                console.log(groups)
                 // Приведение к типу string[] с проверкой
                 userData.groups = Array.isArray(groups) && groups.every(group => typeof group === 'string')
                     ? groups
                     : [];
-            }else{
+                if (userData.groups.length === 0) {
+                    userData.groups = ['NO GROUP'];
+                }
+
+            } else {
                 userData.groups = [guest];
             }
             dispatch(setUser(userData));
@@ -66,14 +74,14 @@ const ProtectedRoute = ({ groups, children }: ProtectedRouteProps) => {
         initializeUser().then();
     }, []);
     useEffect(() => {
-        if(user.isAuth){
+        if (user.isAuth) {
             fetchSettings().then();
         }
     }, [user]);
 
     const fetchSettings = async () => {
         try {
-            const {data} = await client.models.Settings.list({authMode:user.authMode});
+            const {data} = await client.models.Settings.list({authMode: user.authMode});
             const settingsObject: SettingsObject = data.reduce((acc, setting) => {
                 acc[setting.name] = setting;
                 return acc;
@@ -84,18 +92,18 @@ const ProtectedRoute = ({ groups, children }: ProtectedRouteProps) => {
         }
     };
 
-    if(!user.username && !user.groups.includes(guest) || game.settings.length === 0){
+    if (!user.username && !user.groups.includes(guest) || game.settings.length === 0) {
         return (
-        <Box
-            sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 3,
-                justifyContent: "center",
-            }}
-        >
-            <CircularProgress size="5rem" />
-        </Box>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 3,
+                    justifyContent: "center",
+                }}
+            >
+                <CircularProgress size="5rem"/>
+            </Box>
         )
     }
 

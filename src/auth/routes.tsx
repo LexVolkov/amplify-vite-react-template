@@ -14,7 +14,7 @@ export default function Router() {
                 {/* Публичные страницы */}
 
                     <Route path="/" element={
-                        <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS', 'GUEST']}>
+                        <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS', 'GUEST', 'NO GROUP']}>
                             <PublicPage/>
                         </ProtectedRoute>
                     }/>
@@ -24,7 +24,7 @@ export default function Router() {
                     path="/profile"
                     element={
                         <Authenticator>
-                            <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS']}>
+                            <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS', 'NO GROUP']}>
                                 <ProfilePage/>
                             </ProtectedRoute>
                         </Authenticator>

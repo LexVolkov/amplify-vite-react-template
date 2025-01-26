@@ -6,6 +6,7 @@ export const storage = defineStorage({
         'assets/*': [
             allow.guest.to(['read']),
             allow.groups(["GODS"]).to(['read', 'write', 'delete']),
+            allow.authenticated.to(['read'])
         ],
     })
 });
