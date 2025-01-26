@@ -1,7 +1,7 @@
 {
   "name": "amplify-vite-react-template",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,14 +10,28 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.5.5",
-    "aws-amplify": "^6.6.6",
+    "@aws-amplify/ui": "^6.8.0",
+    "@aws-amplify/ui-react": "^6.9.0",
+    "@aws-amplify/ui-react-storage": "^3.7.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.1.1",
+    "@mui/icons-material": "^6.3.1",
+    "@mui/lab": "^6.0.0-beta.22",
+    "@mui/material": "^6.3.1",
+    "@reduxjs/toolkit": "^2.5.0",
+    "aws-amplify": "^6.12.1",
+    "framer-motion": "^12.0.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.1.1"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.5.0",
     "@aws-amplify/backend-cli": "^1.2.9",
+    "@aws-sdk/client-cognito-identity-provider": "^3.726.1",
+    "@types/aws-lambda": "^8.10.147",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
@@ -31,7 +45,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "tsx": "^4.7.2",
-    "typescript": "^5.4.5",
+    "typescript": "^5.7.3",
     "vite": "^5.4.10"
   }
 }
