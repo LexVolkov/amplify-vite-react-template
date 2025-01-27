@@ -2,7 +2,7 @@
 import { Card, CardContent, Typography, Avatar, Box, LinearProgress, useTheme } from '@mui/material';
 import AssetIcon from './AssetIcon';
 import React from "react";
-import {useSettings} from "../redux/hooks/useSettings.ts";
+import {GlobalSettings} from "../utils/DefaultSettings.ts";
 
 
 interface CharacterCardProps {
@@ -11,11 +11,10 @@ interface CharacterCardProps {
 }
 
 const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
-    const settings = useSettings();
     const theme = useTheme();
 
     // Рассчитываем уровень и прогресс
-    const levelUpgradeExp: number = settings.LevelUpgradeExp;
+    const levelUpgradeExp: number = GlobalSettings.LevelUpgradeExp.value;
     const currentLevel = Math.floor(character.experience / levelUpgradeExp);
     const progress = ((character.experience % levelUpgradeExp) / levelUpgradeExp) * 100;
 
@@ -136,7 +135,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                         }
                     }}>
                         <AssetIcon
-                            assetId={settings.LevelIcon}
+                            assetId={GlobalSettings.LevelIcon.value}
                             size={30}
                         />
                         <Typography variant="body2" sx={{ color: theme.palette.text.primary, flexGrow: 1 }}>
@@ -166,7 +165,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                         }
                     }}>
                         <AssetIcon
-                            assetId={settings.ExperienceIcon}
+                            assetId={GlobalSettings.ExperienceIcon.value}
                             size={30}
                         />
                         <Box sx={{ flexGrow: 1 }}>
@@ -210,7 +209,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                         }
                     }}>
                         <AssetIcon
-                            assetId={settings.CoinIcon}
+                            assetId={GlobalSettings.CoinIcon.value}
                             size={30}
                         />
                         <Typography variant="body2" sx={{ color: theme.palette.text.primary, flexGrow: 1 }}>

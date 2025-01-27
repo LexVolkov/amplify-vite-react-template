@@ -1,12 +1,13 @@
 import {useDispatch, useSelector} from 'react-redux';
-import {RootState, setSettings, setUser} from '../redux/store.ts';
+import {initialState, RootState, setUser} from '../redux/store.ts';
 import {fetchAuthSession, getCurrentUser} from "aws-amplify/auth";
-import {useEffect, ReactElement} from "react";
+import {useEffect, ReactElement, useState} from "react";
 import {CircularProgress} from "@mui/material";
 import Box from "@mui/material/Box";
 import {generateClient} from "aws-amplify/api";
 import type {Schema} from "../../amplify/data/resource.ts";
 import NoAccessPage from "./NoAccessPage.tsx";
+import {InitSettings} from "../utils/InitialSettings.ts";
 
 interface ProtectedRouteProps {
     groups: string[];
@@ -15,35 +16,15 @@ interface ProtectedRouteProps {
 
 const guest: string = 'GUEST';
 const client = generateClient<Schema>();
-type Nullable<T> = T | null;
-
-interface Setting {
-    id: string;
-    name: string;
-    value: Nullable<string>;
-    description: Nullable<string>;
-    createdAt: string;
-    updatedAt: string;
-}
-
-interface SettingsObject {
-    [key: string]: Setting;
-}
 
 const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
     const user = useSelector((state: RootState) => state.user);
-    const game = useSelector((state: RootState) => state.game);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const dispatch = useDispatch();
 
     const initializeUser = async () => {
         try {
-            const userData: UserState = {
-                userId: '',
-                username: '',
-                groups: [],
-                isAuth: false,
-                authMode: 'identityPool'
-            };
+            const userData: UserState = {...initialState};
 
             const session = await fetchAuthSession();
             if (session.tokens) {
@@ -51,7 +32,6 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
                 userData.userId = currentUser.userId;
                 userData.username = currentUser.username;
                 const groups = session.tokens.accessToken.payload['cognito:groups'] || [];
-                console.log(groups)
                 // Приведение к типу string[] с проверкой
                 userData.groups = Array.isArray(groups) && groups.every(group => typeof group === 'string')
                     ? groups
@@ -63,36 +43,37 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
             } else {
                 userData.groups = [guest];
             }
-            dispatch(setUser(userData));
+            const {data, errors} = await client.models.UserProfile.list({});
 
+            if (data && data.length > 0) {
+                const profile = data[0];
+                console.log(profile)
+                userData.avatar = profile.avatar;
+                userData.email = profile.email;
+                userData.fullName = profile.fullName;
+                userData.gender = profile.gender;
+                userData.nickname = profile.nickname;
+            }
+            if (errors) {
+                throw new Error(errors[0].message);
+            }
+            dispatch(setUser(userData));
         } catch (error) {
             console.error('Error fetching user data', error);
         }
     };
 
     useEffect(() => {
+        setIsLoading(true);
         initializeUser().then();
     }, []);
     useEffect(() => {
         if (user.isAuth) {
-            fetchSettings().then();
+            InitSettings().then(() => setIsLoading(false));
         }
     }, [user]);
 
-    const fetchSettings = async () => {
-        try {
-            const {data} = await client.models.Settings.list({authMode: user.authMode});
-            const settingsObject: SettingsObject = data.reduce((acc, setting) => {
-                acc[setting.name] = setting;
-                return acc;
-            }, {} as SettingsObject);
-            dispatch(setSettings(settingsObject));
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
-
-    if (!user.username && !user.groups.includes(guest) || game.settings.length === 0) {
+    if ((!user.username && !user.groups.includes(guest)) || isLoading) {
         return (
             <Box
                 sx={{

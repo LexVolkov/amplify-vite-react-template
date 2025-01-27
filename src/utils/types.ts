@@ -1,3 +1,18 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type SettingValueType =
+    "string" |
+    "number" |
+    "boolean" |
+    "asset" |
+    "color" |
+    null |
+    undefined;
+
+type SettingRecord = {
+    value: any;
+    type: SettingValueType;
+    order: number;
+}
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -14,6 +29,11 @@ interface UserState {
     groups: string[];
     isAuth: boolean;
     authMode: 'identityPool' | 'userPool';
+    avatar: string | null;
+    email: string | null;
+    fullName: string | null;
+    gender: 'MALE' | 'FEMALE' | 'OTHER' | null ;
+    nickname: string | null;
 }
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -43,5 +63,9 @@ type Character = Schema["Character"]["type"];
 // @ts-expect-error
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Setting = Schema["Setting"]["type"];
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type UserProfile = Schema["UserProfile"]["type"];
 
 

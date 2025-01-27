@@ -14,14 +14,13 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import {useSelector} from "react-redux";
 import {RootState} from "../../redux/store.ts";
 import LoadingButton from "@mui/lab/LoadingButton";
-import {useSettings} from "../../redux/hooks/useSettings.ts";
+import {GlobalSettings} from "../../utils/DefaultSettings.ts";
 
 
 const client = generateClient<Schema>();
 
 export default function ControlPage() {
     const user = useSelector((state: RootState) => state.user);
-    const settings = useSettings();
     const [selectedServerId, setSelectedServerId] = useState<string>('');
     const [characters, setCharacters] = useState<Character[]>([]);
     const [searchQuery, setSearchQuery] = useState<string | null>('');
@@ -59,17 +58,17 @@ export default function ControlPage() {
             setIsLoadingCharsId((prev: string[]) => [...prev, character.id]);
 
             const currentCoin: number = character.coins || 0;
-            const coinsAdded: number = settings.CoinsAdded;
+            const coinsAdded: number = GlobalSettings.CoinsAdded.value;
             const resultCoin: number = minus ? currentCoin - coinsAdded : currentCoin + coinsAdded;
 
             const currentExperience: number = character.experience || 0;
-            const coinsExp: number = settings.CoinsExp;
+            const coinsExp: number = GlobalSettings.CoinsExp.value;
             const resultExperience: number = minus
                 ? currentExperience
                 : currentExperience + (coinsAdded * coinsExp);
 
             const currentLevel: number = character.level || 1;
-            const levelUpgradeExp: number = settings.LevelUpgradeExp;
+            const levelUpgradeExp: number = GlobalSettings.LevelUpgradeExp.value;
             const resultLevel = resultExperience > 0
                 ? Math.floor(resultExperience / levelUpgradeExp)
                 : currentLevel;

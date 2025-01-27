@@ -4,7 +4,7 @@ import {
     Box,
     Alert,
 } from '@mui/material';
-import {useSettings} from "../../../../redux/hooks/useSettings.ts";
+import {GlobalSettings} from "../../../../utils/DefaultSettings.ts";
 
 interface AssetUploaderProps {
     uploadPath?: string;
@@ -15,7 +15,6 @@ export const AssetUploader: React.FC<AssetUploaderProps> = ({
                                                                 uploadPath,
                                                                 onUploadPaths
                                                             }) => {
-    const settings = useSettings();
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +27,7 @@ export const AssetUploader: React.FC<AssetUploaderProps> = ({
         onUploadPaths && onUploadPaths(uploadedFiles);
     }, [onUploadPaths, uploadedFiles]);
 
-    if (!settings.AssetsStorageRootFolder) return (<>error setting</>);
+    if (!GlobalSettings.AssetsStorageRootFolder.value) return (<>error setting</>);
 
     const handleUploadSuccess = async (event: { key?: string | undefined }) => {
         console.log('Successfully uploaded files: ', event.key)
@@ -42,7 +41,7 @@ export const AssetUploader: React.FC<AssetUploaderProps> = ({
 
     const getUploadPath = () => {
         const randomPath = generateRandomString(12); // Генерируем случайную строку длиной 10 символов
-        return `${settings.AssetsStorageRootFolder}/${uploadPath ? uploadPath : 'unknown'}/${randomPath}-`;
+        return `${GlobalSettings.AssetsStorageRootFolder.value}/${uploadPath ? uploadPath : 'unknown'}/${randomPath}-`;
     };
 
     return (

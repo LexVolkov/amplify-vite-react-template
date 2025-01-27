@@ -6,6 +6,10 @@ import ControlPage from '../pages/control/ControlPage';
 import ProtectedRoute from './ProtectedRoute';
 import {Authenticator} from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { I18n } from 'aws-amplify/utils';
+import { translations } from '@aws-amplify/ui-react';
+I18n.putVocabularies(translations);
+I18n.setLanguage('ua');
 
 export default function Router() {
     return (

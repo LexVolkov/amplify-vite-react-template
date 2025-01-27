@@ -66,7 +66,7 @@ const AssetIcon: React.FC<AnimatedIconProps> = ({
     useEffect(() => {
         setImageSrc(null);
         if (!assetId && !path) return;
-        const cacheKey = assetId ? `asset:${assetId}` : `path:${path}`;
+        const cacheKey = assetId ? `asset:${assetId}-${user.userId}` : `path:${path}`;
 
         // Загружаем данные
         const loadData = async () => {

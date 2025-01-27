@@ -1,15 +1,15 @@
 import {type ClientSchema, a, defineData} from "@aws-amplify/backend";
-
+import {postConfirmation} from "../auth/post-confirmation/resource";
 
 const accessLevel = {
-    guest:'GUEST',
-    admin:'GODS',
-    moder:'CURATORS',
-    member:'KIDS'
+    guest: 'GUEST',
+    admin: 'GODS',
+    moder: 'CURATORS',
+    member: 'KIDS'
 }
 
 const schema = a.schema({
-     Character: a
+    Character: a
         .model({
             owner: a.id(),
             nickname: a.string().required(),
@@ -29,7 +29,6 @@ const schema = a.schema({
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
         ]),
-
 
 
     Server: a
@@ -62,6 +61,10 @@ const schema = a.schema({
         .model({
             email: a.string(),
             profileOwner: a.string(),
+            fullName: a.string(),
+            nickname: a.string(),
+            avatar: a.string(),
+            gender: a.enum(['MALE', 'FEMALE', 'OTHER'])
         })
         .authorization((allow) => [
             allow.ownerDefinedIn("profileOwner"),
@@ -81,7 +84,6 @@ const schema = a.schema({
         ]),
 
 
-
     Asset: a
         .model({
             path: a.string(),
@@ -99,15 +101,15 @@ const schema = a.schema({
         ]),
     Tag: a
         .model({
-        name: a.string().required(),
-        description: a.string(),
-        assets: a.hasMany('AssetTag', 'tagId'),
-    }).authorization((allow) => [
-        allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
-        allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
-        allow.guest().to(["read"]),
+            name: a.string().required(),
+            description: a.string(),
+            assets: a.hasMany('AssetTag', 'tagId'),
+        }).authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
+            allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
+            allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
-    ]),
+        ]),
     AssetTag: a
         .model({
             assetId: a.id().required(),
@@ -146,7 +148,9 @@ const schema = a.schema({
             allow.authenticated().to(["read"]),
         ]),
 
-});
+}).authorization((allow) => [
+    allow.resource(postConfirmation)
+]);
 
 export type Schema = ClientSchema<typeof schema>;
 

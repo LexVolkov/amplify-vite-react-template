@@ -7,7 +7,6 @@ import {
     Paper, Alert,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 import type {Schema} from "../../../../amplify/data/resource.ts";
@@ -18,6 +17,8 @@ import AssetPicker from './components/AssetPicker.tsx';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import AssetIcon from "../../../components/AssetIcon.tsx";
+import CloseIcon from '@mui/icons-material/Close';
+import LoadingButton from "@mui/lab/LoadingButton";
 
 const client = generateClient<Schema>();
 
@@ -33,11 +34,10 @@ const defaultSettingData: Setting = {
 
 function AdminSettingPage() {
     const [settings, setSettings] = useState<Setting[]>([]);
-    const [editedSettings, setEditedSettings] = useState<Record<string, Setting>>({});
+    const [editedSetting, setEditedSetting] = useState<Setting>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isLoadingSave, setIsLoadingSave] = useState<string>('');
+    const [isLoadingSave, setIsLoadingSave] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [editingId, setEditingId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -60,28 +60,18 @@ function AdminSettingPage() {
 
     const createSetting = () => {
         const newSetting = {...defaultSettingData, id: `temp-${Date.now()}`};
-        setSettings([ newSetting,...settings]);
-        setEditedSettings({
-            ...editedSettings,
-            [newSetting.id]: newSetting
-        });
-        setEditingId(newSetting.id);
+        setSettings([newSetting, ...settings]);
+        setEditedSetting(newSetting);
     };
 
     const handleFieldChange = (id: string, field: keyof Setting, value: string) => {
-        const updatedSettings = settings.map(setting =>
-            setting.id === id ? {...setting, [field]: value} : setting
-        );
-        setSettings(updatedSettings);
-        setEditedSettings({
-            ...editedSettings,
-            [id]: {...settings.find(setting => setting.id === id), [field]: value}
-        });
+        console.log(id)
+        setEditedSetting({...editedSetting, [field]: value});
     };
 
     const saveChanges = async (id: string) => {
         setError(null);
-        const setting = settings.find(setting => setting.id === id);
+        const setting = editedSetting;
         if (!setting) {
             setError('Setting not found');
             return;
@@ -90,8 +80,12 @@ function AdminSettingPage() {
             setError('NAME cannot be empty');
             return;
         }
+        if (setting === settings.find((s: Setting) => s.id === id)) {
+            setEditedSetting([]);
+            return;
+        }
         try {
-            setIsLoadingSave(id);
+            setIsLoadingSave(true);
             if (setting.id.startsWith('temp-')) {
                 const {data, errors} = await client.models.Settings.create({
                     name: setting.name,
@@ -122,30 +116,14 @@ function AdminSettingPage() {
                     prev.map(s => (s.id === setting.id ? {...data} : s))
                 );
             }
-            setEditedSettings({});
-            setEditingId(null);
+            setEditedSetting(null);
         } catch (error) {
             setError(`Error saving changes: ${(error as Error).message}`);
         } finally {
-            setIsLoadingSave('');
+            setIsLoadingSave(false);
         }
     };
 
-    const deleteSetting = async (id: string) => {
-        const confirmDelete = window.confirm('Are you sure you want to delete this setting line?');
-        if (confirmDelete) {
-            try {
-                setError(null);
-                setIsLoading(true);
-                await client.models.Settings.delete({id: id});
-                setSettings(settings.filter(setting => setting.id !== id));
-            } catch (error) {
-                setError(`Delete failed: ${(error as Error).message}`);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
 
     const renderValueField = (setting: Setting, edited: boolean) => {
         switch (setting.type) {
@@ -156,7 +134,7 @@ function AdminSettingPage() {
                             fullWidth
                             size="small"
                             type="number"
-                            value={setting.value || ''}
+                            value={editedSetting.value || ''}
                             onChange={(e) => handleFieldChange(setting.id, 'value', e.target.value)}
                             placeholder="Value"
                             sx={{marginRight: 2}}
@@ -173,7 +151,7 @@ function AdminSettingPage() {
                             fullWidth
                             size="small"
                             type="color"
-                            value={setting.value || '#000000'}
+                            value={editedSetting.value || '#000000'}
                             onChange={(e) => handleFieldChange(setting.id, 'value', e.target.value)}
                             placeholder="Value"
                             sx={{marginRight: 2}}
@@ -185,7 +163,7 @@ function AdminSettingPage() {
                             fullWidth
                             size="small"
                             type="color"
-                            value={setting.value || '#000000'}
+                            value={editedSetting.value || '#000000'}
                             onChange={(e) => handleFieldChange(setting.id, 'value', e.target.value)}
                             placeholder="Value"
                             sx={{marginRight: 2}}
@@ -198,7 +176,7 @@ function AdminSettingPage() {
 
                 if (edited) {
                     return (<Switch
-                        checked={setting.value === 'true'}
+                        checked={editedSetting.value === 'true'}
                         onChange={(e) => handleFieldChange(setting.id, 'value', e.target.checked ? 'true' : 'false')}
                     />);
                 } else {
@@ -208,7 +186,7 @@ function AdminSettingPage() {
                 if (edited) {
                     return (
                         <AssetPicker
-                            value={setting.value || ''}
+                            value={editedSetting.value || ''}
                             onChange={(value) => handleFieldChange(setting.id, 'value', value)}
                         />
                     );
@@ -223,7 +201,7 @@ function AdminSettingPage() {
                         <TextField
                             fullWidth
                             size="small"
-                            value={setting.value || ''}
+                            value={editedSetting.value || ''}
                             onChange={(e) => handleFieldChange(setting.id, 'value', e.target.value)}
                             placeholder="Value"
                             sx={{marginRight: 2}}
@@ -236,13 +214,8 @@ function AdminSettingPage() {
         }
     };
 
-    const handleEdit = (id: string) => {
-        setEditingId(id);
-    };
-
     const handleSave = (id: string) => {
         saveChanges(id).then();
-        setEditingId(null);
     };
 
     return (
@@ -263,41 +236,28 @@ function AdminSettingPage() {
                         <div key={setting.id}>
                             <Paper elevation={4} sx={{width: '100%', padding: 1, margin: '10px'}}>
                                 <Grid container spacing={2} alignItems="center">
-                                    {editingId === setting.id ? (
+                                    {editedSetting?.id === setting.id ? (
                                         <>
-                                            <Grid>
-                                                <IconButton
-                                                    edge="end"
-                                                    aria-label="save"
-                                                    onClick={() => handleSave(setting.id)}
-                                                >
-                                                    <DoneIcon/>
-                                                </IconButton>
-                                                <IconButton
-                                                    edge="end"
-                                                    aria-label="delete"
-                                                    onClick={() => deleteSetting(setting.id)}
-                                                >
-                                                    <DeleteForeverIcon/>
-                                                </IconButton>
-                                            </Grid>
+
                                             <Grid size={{xs: 12, md: 3}}>
                                                 <TextField
                                                     size="small"
-                                                    value={setting.name || ''}
+                                                    value={editedSetting.name || ''}
                                                     onChange={e =>
-                                                        handleFieldChange(setting.id, 'name', e.target.value)
+                                                        handleFieldChange(editedSetting.id, 'name', e.target.value)
                                                     }
                                                     placeholder="Name"
                                                     fullWidth
+                                                    disabled={true}
                                                 />
                                             </Grid>
                                             <Grid size={{xs: 12, md: 2}}>
                                                 <Select
                                                     size="small"
-                                                    value={setting.type}
-                                                    onChange={(e) => handleFieldChange(setting.id, 'type', e.target.value as Setting["type"])}
+                                                    value={editedSetting.type}
+                                                    onChange={(e) => handleFieldChange(editedSetting.id, 'type', e.target.value as Setting["type"])}
                                                     fullWidth
+                                                    disabled={true}
                                                 >
                                                     <MenuItem value="string">String</MenuItem>
                                                     <MenuItem value="number">Number</MenuItem>
@@ -307,58 +267,75 @@ function AdminSettingPage() {
                                                 </Select>
                                             </Grid>
                                             <Grid size={{xs: 12, md: 3}}>
-                                                {renderValueField(setting, true)}
+                                                {renderValueField(editedSetting, true)}
                                             </Grid>
                                             <Grid size={{xs: 10, md: 3}}>
                                                 <TextField
                                                     size="small"
-                                                    value={setting.description || ''}
+                                                    value={editedSetting.description || ''}
                                                     onChange={e =>
-                                                        handleFieldChange(setting.id, 'description', e.target.value)
+                                                        handleFieldChange(editedSetting.id, 'description', e.target.value)
                                                     }
                                                     placeholder="Description"
                                                     fullWidth
                                                 />
                                             </Grid>
+                                            <Grid  size={{xs: 12, md: 12}}>
+                                                <LoadingButton
+                                                    sx={{padding: 1, margin: '10px'}}
+                                                    startIcon={<DoneIcon/>}
+                                                    aria-label="save"
+                                                    onClick={() => handleSave(setting.id)}
+                                                    variant="contained"
+                                                    color={'secondary'}
+                                                    loading={isLoadingSave}
+                                                >
+                                                    Save
+                                                </LoadingButton>
+                                                <Button
+                                                    sx={{padding: 1, margin: '10px'}}
+                                                    startIcon={<CloseIcon/>}
+                                                    aria-label="close"
+                                                    onClick={() => setEditedSetting(null)}
+                                                    variant="contained"
+                                                    color={'primary'}
+                                                >
+                                                    Cancel
+                                                </Button>
 
+                                            </Grid>
                                         </>
                                     ) : (
                                         <>
-                                            {isLoadingSave === setting.id ?
-                                                <Skeleton animation="wave"  variant="rounded" width="100%" height={60}/>
-                                                :
-                                                <>
-                                                    <Grid style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                                        <IconButton
-                                                            edge="end"
-                                                            aria-label="edit"
-                                                            onClick={() => handleEdit(setting.id)}
-                                                        >
-                                                            <EditIcon/>
-                                                        </IconButton>
-                                                    </Grid>
+                                            <Grid style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="edit"
+                                                    onClick={() => setEditedSetting(setting)}
+                                                >
+                                                    <EditIcon/>
+                                                </IconButton>
+                                            </Grid>
 
-                                                    <Grid size={{xs: 10, md: 3}}>
-                                                        <Paper elevation={6}
-                                                               sx={{width: '100%', padding: 2, marginTop: '10px'}}>
-                                                            {setting.name}
-                                                        </Paper>
-                                                    </Grid>
+                                            <Grid size={{xs: 10, md: 3}}>
+                                                <Paper elevation={6}
+                                                       sx={{width: '100%', padding: 2, marginTop: '10px'}}>
+                                                    {setting.name}
+                                                </Paper>
+                                            </Grid>
 
-                                                    <Grid size={{xs: 12, md: 2}}>
-                                                        <Paper elevation={6}
-                                                               sx={{width: '100%', padding: 2, marginTop: '10px'}}>
-                                                            {renderValueField(setting, false)}
-                                                        </Paper>
-                                                    </Grid>
-                                                    <Grid size={{xs: 12, md: 6}}>
-                                                        <Paper elevation={6}
-                                                               sx={{width: '100%', padding: 2, marginTop: '10px'}}>
-                                                            {setting.description}
-                                                        </Paper>
-                                                    </Grid>
-                                                </>
-                                        }
+                                            <Grid size={{xs: 12, md: 2}}>
+                                                <Paper elevation={6}
+                                                       sx={{width: '100%', padding: 2, marginTop: '10px'}}>
+                                                    {renderValueField(setting, false)}
+                                                </Paper>
+                                            </Grid>
+                                            <Grid size={{xs: 12, md: 6}}>
+                                                <Paper elevation={6}
+                                                       sx={{width: '100%', padding: 2, marginTop: '10px'}}>
+                                                    {setting.description}
+                                                </Paper>
+                                            </Grid>
                                         </>
                                     )}
                                 </Grid>
