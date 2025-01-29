@@ -11,7 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 import type {Schema} from "../../../../amplify/data/resource.ts";
 import {generateClient} from "aws-amplify/data";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useMemo} from "react";
 import {Skeleton} from "@mui/material";
 import AssetPicker from './components/AssetPicker.tsx';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -19,6 +19,7 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import AssetIcon from "../../../components/AssetIcon.tsx";
 import CloseIcon from '@mui/icons-material/Close';
 import LoadingButton from "@mui/lab/LoadingButton";
+import {GlobalSettings} from "../../../utils/DefaultSettings.ts";
 
 const client = generateClient<Schema>();
 
@@ -217,6 +218,16 @@ function AdminSettingPage() {
     const handleSave = (id: string) => {
         saveChanges(id).then();
     };
+    const orderSettings = (settings: Setting[]) => {
+        if (settings.length === 0) return settings;
+        return settings.sort((a, b) => {
+            const orderA = GlobalSettings[a.name]?.order || 0;
+            const orderB = GlobalSettings[b.name]?.order || 0;
+            return orderA - orderB;
+        });
+    };
+
+    const sortedSettings = useMemo(() => orderSettings(settings), [settings]);
 
     return (
         <div>
@@ -232,7 +243,7 @@ function AdminSettingPage() {
                 <Skeleton variant="rectangular" width="100%" height={118}/>
             ) : (
                 <Paper elevation={0}>
-                    {settings.map(setting => (
+                    {sortedSettings.map(setting => (
                         <div key={setting.id}>
                             <Paper elevation={4} sx={{width: '100%', padding: 1, margin: '10px'}}>
                                 <Grid container spacing={2} alignItems="center">
@@ -280,7 +291,7 @@ function AdminSettingPage() {
                                                     fullWidth
                                                 />
                                             </Grid>
-                                            <Grid  size={{xs: 12, md: 12}}>
+                                            <Grid size={{xs: 12, md: 12}}>
                                                 <LoadingButton
                                                     sx={{padding: 1, margin: '10px'}}
                                                     startIcon={<DoneIcon/>}

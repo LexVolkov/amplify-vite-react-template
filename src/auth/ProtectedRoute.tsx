@@ -24,9 +24,12 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
 
     const initializeUser = async () => {
         try {
+            setIsLoading(true);
+
             const userData: UserState = {...initialState};
 
             const session = await fetchAuthSession();
+            userData.identityId = session.identityId || null;
             if (session.tokens) {
                 const currentUser = await getCurrentUser();
                 userData.userId = currentUser.userId;
@@ -39,39 +42,39 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
                 if (userData.groups.length === 0) {
                     userData.groups = ['NO GROUP'];
                 }
-
+                userData.authMode = 'userPool';
             } else {
                 userData.groups = [guest];
+                userData.authMode = 'identityPool';
             }
-            const {data, errors} = await client.models.UserProfile.list({});
+            if(userData.isAuth) {
 
-            if (data && data.length > 0) {
-                const profile = data[0];
-                console.log(profile)
-                userData.avatar = profile.avatar;
-                userData.email = profile.email;
-                userData.fullName = profile.fullName;
-                userData.gender = profile.gender;
-                userData.nickname = profile.nickname;
+                const {data, errors} = await client.models.UserProfile.list({});
+
+                if (data && data.length > 0) {
+                    const profile = data[0];
+                    userData.avatar = profile.avatar;
+                    userData.email = profile.email;
+                    userData.fullName = profile.fullName;
+                    userData.gender = profile.gender;
+                    userData.nickname = profile.nickname;
+                }
+                if (errors) {
+                    throw new Error(errors[0].message);
+                }
             }
-            if (errors) {
-                throw new Error(errors[0].message);
-            }
+            InitSettings(userData.authMode, userData.groups).then();
             dispatch(setUser(userData));
         } catch (error) {
             console.error('Error fetching user data', error);
+        }finally {
+            setIsLoading(false)
         }
     };
 
     useEffect(() => {
-        setIsLoading(true);
         initializeUser().then();
     }, []);
-    useEffect(() => {
-        if (user.isAuth) {
-            InitSettings().then(() => setIsLoading(false));
-        }
-    }, [user]);
 
     if ((!user.username && !user.groups.includes(guest)) || isLoading) {
         return (

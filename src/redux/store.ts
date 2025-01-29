@@ -1,8 +1,8 @@
 import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {accessLevel} from "../utils/AccessLevel.tsx";
 
 export const initialState: UserState = {
     userId: null,
+    identityId: undefined,
     username: null,
     groups: [],
     isAuth: false,
@@ -21,10 +21,11 @@ const userSlice = createSlice({
     reducers: {
         setUser: (state, action: PayloadAction<UserState>) => {
             state.userId = action.payload.userId;
+            state.identityId = action.payload.identityId;
             state.username = action.payload.username;
             state.groups = action.payload.groups;
             state.isAuth = true;
-            state.authMode = action.payload.groups.includes(accessLevel.guest) ? 'identityPool' : 'userPool';
+            state.authMode = action.payload.authMode;
             state.avatar = action.payload.avatar;
             state.email = action.payload.email;
             state.fullName = action.payload.fullName;

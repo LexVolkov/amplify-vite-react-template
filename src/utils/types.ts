@@ -25,6 +25,7 @@ type AccessLevel = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserState {
     userId: string | null;
+    identityId: string | null;
     username: string | null;
     groups: string[];
     isAuth: boolean;
