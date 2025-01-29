@@ -8,6 +8,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import ColorModeProvider from "./layots/theme/ColorModeProvider.tsx";
 import {Provider} from 'react-redux';
 import {store} from './redux/store.ts';
+import {BrowserRouter} from "react-router-dom";
 
 
 Amplify.configure(outputs);
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Provider store={store}>
             <ColorModeProvider>
                 <CssBaseline/>
-                <App/>
+                <BrowserRouter>
+                    <App/>
+                </BrowserRouter>
             </ColorModeProvider>
         </Provider>
     </React.StrictMode>

@@ -1,4 +1,4 @@
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import PublicPage from '../pages/public/PublicPage';
 import AdminPage from '../pages/admin/AdminPage';
 import ProfilePage from '../pages/profile/ProfilePage';
@@ -13,7 +13,6 @@ I18n.setLanguage('ua');
 
 export default function Router() {
     return (
-        <BrowserRouter>
             <Routes>
                 {/* Публичные страницы */}
 
@@ -55,6 +54,5 @@ export default function Router() {
                     }
                 />
             </Routes>
-        </BrowserRouter>
     );
 }
