@@ -48,7 +48,6 @@ export const AssetSelector: FC<TagsSelectorProps> = ({
                     {id: selectedSubCategoryId},
                     {selectionSet: ['assets.*', 'assets.tags.tag.*']}
                 );
-                console.log('assets', assetData?.assets || [])
 
                 setAssets(assetData?.assets || []);
             } catch (err) {
@@ -73,6 +72,11 @@ export const AssetSelector: FC<TagsSelectorProps> = ({
         setAssets(newAssetDataFiltered);
     };
     const handleUpdateAsset = (asset: Asset, prevAsset: Asset) => {
+        if(asset.subCategoryId !== prevAsset.subCategoryId){
+            const newAssetDataFiltered = assets.filter((a) => a.id !== prevAsset.id);
+            setAssets(newAssetDataFiltered);
+            return;
+        }
         const newAssetDataFiltered = assets.map((a) => (a.id === prevAsset.id? asset : a));
         setAssets(newAssetDataFiltered);
     };
@@ -106,7 +110,7 @@ export const AssetSelector: FC<TagsSelectorProps> = ({
                         Add new asset
                     </Button>
                 </Typography>
-                {isLoading ? <Skeleton animation="wave" variant="rounded" width={320} height={70}/> :
+                {isLoading ? <Skeleton animation="wave" variant="rounded" width={200} height={200}/> :
                     filteredAssets.length > 0 ? (
                             <Box sx={{flexGrow: 1}}>
                                 {filteredAssets.map((asset, index) => (

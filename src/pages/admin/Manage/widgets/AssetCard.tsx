@@ -21,6 +21,7 @@ import {AssetUploader} from "../components/AssetUploader.tsx";
 import HideImageIcon from "@mui/icons-material/HideImage";
 import {remove} from 'aws-amplify/storage';
 import Paper from "@mui/material/Paper";
+import {CategorySelector} from "./CategorySelector.tsx";
 
 const client = generateClient<Schema>();
 
@@ -124,13 +125,13 @@ const AssetCard: React.FC<AssetCardProps> = ({
                     path: editedAsset.path || '',
                     name: editedAsset.name || 'Unknown',
                     description: editedAsset.description || '',
+                    subCategoryId: editedAsset.subCategoryId || asset.subCategoryId || '',
                 },
-                {selectionSet: ['id', 'path', 'name', 'description', 'tags.tag.*']});
+                {selectionSet: ['id', 'subCategoryId', 'path', 'name', 'description', 'tags.tag.*']});
+
             if (errors) {
                 throw new Error(errors.map(e => e.message).join(', '));
             }
-
-
             setIsEditing(false)
             setEditedAsset(updatedAssetData);
             onUpdate?.(updatedAssetData, asset);
@@ -370,7 +371,15 @@ const AssetCard: React.FC<AssetCardProps> = ({
             <CardContent>
                 {isEditing ? (
                     <>
-
+                        Катигорія:
+                        <CategorySelector
+                            onSubCategoryChange={
+                            (subCId) =>
+                                setEditedAsset({
+                                    ...editedAsset, subCategoryId: subCId
+                                })}
+                            onError={setError}
+                        />
                         <TextField
                             fullWidth
                             label="Name"

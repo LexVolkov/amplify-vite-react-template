@@ -1,26 +1,45 @@
-// CharacterList.tsx
 import { useState } from 'react';
 import { ButtonGroup, Button, Skeleton } from '@mui/material';
 import CharacterCard from './CharacterCard';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+
 const SORT_TYPES = {
     EXPERIENCE: 'experience',
     COINS: 'coins',
     NAME: 'name'
 };
+
 interface CharacterListProps {
-    characters: Character;
+    characters: Character[];
     isLoading: boolean;
 }
 
-const CharacterList = ({characters, isLoading}: CharacterListProps) => {
-
+const CharacterList = ({ characters, isLoading }: CharacterListProps) => {
     const [sortType, setSortType] = useState(SORT_TYPES.EXPERIENCE);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+    const handleSortChange = (type: string) => {
+        if (sortType === type) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortType(type);
+            setSortOrder(type === SORT_TYPES.NAME ? 'asc' : 'desc');
+        }
+    };
 
     const sortedCharacters = [...characters].sort((a, b) => {
-        if (sortType === SORT_TYPES.EXPERIENCE) return b.experience - a.experience;
-        if (sortType === SORT_TYPES.COINS) return b.coins - a.coins;
-        return a.nickname.localeCompare(b.nickname);
+        let comparison = 0;
+
+        if (sortType === SORT_TYPES.EXPERIENCE) {
+            comparison = b.experience - a.experience;
+        } else if (sortType === SORT_TYPES.COINS) {
+            comparison = b.coins - a.coins;
+        } else {
+            comparison = a.nickname.localeCompare(b.nickname);
+        }
+
+        return sortOrder === 'desc' ? comparison : -comparison;
     });
 
     return (
@@ -28,21 +47,30 @@ const CharacterList = ({characters, isLoading}: CharacterListProps) => {
             <ButtonGroup sx={{ m: 2 }}>
                 <Button
                     variant={sortType === SORT_TYPES.EXPERIENCE ? 'contained' : 'outlined'}
-                    onClick={() => setSortType(SORT_TYPES.EXPERIENCE)}
+                    onClick={() => handleSortChange(SORT_TYPES.EXPERIENCE)}
                 >
-                    {sortType === SORT_TYPES.EXPERIENCE && <FilterListIcon/>} Досвід
+                    {sortType === SORT_TYPES.EXPERIENCE &&
+                        (sortOrder==='asc'
+                            ?<KeyboardDoubleArrowUpIcon />:
+                         <KeyboardDoubleArrowDownIcon />)} Досвід
                 </Button>
                 <Button
                     variant={sortType === SORT_TYPES.COINS ? 'contained' : 'outlined'}
-                    onClick={() => setSortType(SORT_TYPES.COINS)}
+                    onClick={() => handleSortChange(SORT_TYPES.COINS)}
                 >
-                    {sortType === SORT_TYPES.COINS && <FilterListIcon/>} Монети
+                    {sortType === SORT_TYPES.COINS &&
+                        (sortOrder==='asc'
+                            ?<KeyboardDoubleArrowUpIcon />:
+                            <KeyboardDoubleArrowDownIcon />)} Монети
                 </Button>
                 <Button
                     variant={sortType === SORT_TYPES.NAME ? 'contained' : 'outlined'}
-                    onClick={() => setSortType(SORT_TYPES.NAME)}
+                    onClick={() => handleSortChange(SORT_TYPES.NAME)}
                 >
-                    {sortType === SORT_TYPES.NAME && <FilterListIcon/>} Нікнейм
+                    {sortType === SORT_TYPES.NAME &&
+                        (sortOrder==='desc'
+                            ?<KeyboardDoubleArrowUpIcon />:
+                            <KeyboardDoubleArrowDownIcon />)} Нікнейм
                 </Button>
             </ButtonGroup>
 
@@ -56,7 +84,7 @@ const CharacterList = ({characters, isLoading}: CharacterListProps) => {
                         <CharacterCard
                             key={character.id}
                             character={character}
-                            place={i + 1}
+                            place={sortType === SORT_TYPES.NAME? undefined : i + 1}
                         />
                     ))
                 )}
@@ -64,4 +92,5 @@ const CharacterList = ({characters, isLoading}: CharacterListProps) => {
         </div>
     );
 }
+
 export default CharacterList;

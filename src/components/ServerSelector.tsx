@@ -1,9 +1,10 @@
-import { Alert, CircularProgress, MenuItem, TextField } from "@mui/material";
+import { CircularProgress, MenuItem, TextField } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { generateClient } from "aws-amplify/api";
 import type { Schema } from "../../amplify/data/resource.ts";
+import {useError} from "../utils/setError.tsx";
 
 const client = generateClient<Schema>();
 
@@ -19,13 +20,20 @@ export const ServerSelector: FC<ServerSelectorProps> = ({
     const user = useSelector((state: RootState) => state.user);
     const [servers, setServers] = useState<Server[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const setError = useError();
 
     useEffect(() => {
         const fetchServers = async () => {
             try {
                 setIsLoading(true);
-                const { data } = await client.models.Server.list({ authMode:user.authMode });
+                const { data, errors } = await client.models.Server.list({ authMode:user.authMode });
+
+                if (errors) {
+                    setError('#003:01', 'Помилка при отриманні списку змін', String(errors))
+                    console.error('Error fetching Servers:', errors);
+                    return;
+                }
+
                 setServers([...data]);
 
                 // Проверяем, есть ли сохраненный сервер в localStorage
@@ -34,8 +42,8 @@ export const ServerSelector: FC<ServerSelectorProps> = ({
                     onChange?.(savedServerId);
                 }
             } catch (error) {
+                setError('#003:02', 'Помилка при отриманні списку змін', (error as Error).message)
                 console.error('Error fetching servers:', error);
-                setError('Error fetching servers');
             } finally {
                 setIsLoading(false);
             }
@@ -51,13 +59,7 @@ export const ServerSelector: FC<ServerSelectorProps> = ({
         localStorage.setItem('selectedServerId', newServerId);
     };
 
-    if (error) {
-        return <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-        </Alert>;
-    }
-
-    if (isLoading) {
+    if (isLoading || servers.length === 0) {
         return <CircularProgress />;
     }
 

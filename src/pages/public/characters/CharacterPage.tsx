@@ -1,12 +1,13 @@
 // CharacterPage.tsx
 import { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/data';
-import {Alert, Box} from '@mui/material';
+import {Box} from '@mui/material';
 import CharacterList from "../../../components/CharacterList.tsx";
 import type {Schema} from "../../../../amplify/data/resource.ts";
 import {ServerSelector} from "../../../components/ServerSelector.tsx";
 import {useSelector} from "react-redux";
 import {RootState} from "../../../redux/store.ts";
+import {useError} from "../../../utils/setError.tsx";
 
 const client = generateClient<Schema>();
 
@@ -15,27 +16,31 @@ export default function CharacterPage() {
     const [selectedServerId, setSelectedServerId] = useState('');
     const [characters, setCharacters] = useState<Character[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
+    const setError = useError();
 
     useEffect(() => {
         if (selectedServerId) fetchCharacters().then();
     }, [selectedServerId]);
 
     const fetchCharacters = async () => {
-
         try {
             setIsLoading(true);
 
-            const {data: characterData} = await client.models.Server.get(
+
+            const {data: characterData, errors} = await client.models.Server.get(
                 {id: selectedServerId},
                 {selectionSet: ['characters.*'], authMode:user.authMode}
             );
+            if (errors) {
+                setError('#002:01', 'Помилка при отриманні списку персонажів', String(errors))
+                console.error('Error fetching Chars:', errors);
+                return;
+            }
 
             setCharacters(characterData?.characters || []);
         } catch (error) {
-            console.error('Error fetching settings:', error);
-            setError('Помилка при завантаженні персонаж.');
+            setError('#002:02', 'Помилка при отриманні даних персонажів', (error as Error).message)
+            console.error('Error fetching Chars:', error);
         } finally {
             setIsLoading(false);
         }
@@ -47,11 +52,6 @@ export default function CharacterPage() {
                 value={selectedServerId}
                 onChange={(serverId) => setSelectedServerId(serverId)}
             />
-            {error && (
-                <Alert severity="error" sx={{mb: 2}} onClose={() => setError(null)}>
-                    {error}
-                </Alert>
-            )}
             {selectedServerId && (
                 <CharacterList
                     characters={characters}

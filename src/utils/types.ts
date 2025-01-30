@@ -8,6 +8,7 @@ type SettingValueType =
     null |
     undefined;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SettingRecord = {
     value: any;
     type: SettingValueType;
@@ -21,6 +22,13 @@ type AccessLevel = {
     admin: string;
     moder: string;
     member: string;
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface NotificationState {
+    notificationCode: string | null;
+    notificationMessage: string | null;
+    notificationDetails: string | null;
+    notificationType: 'default' | 'error' | 'success' | 'warning' | 'info';
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserState {

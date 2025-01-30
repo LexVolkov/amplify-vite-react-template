@@ -36,6 +36,7 @@ function AdminAssetPage() {
                         <CategorySelector
                             onSubCategoryChange={setSelectedSubCategory}
                             onError={setError}
+                            isItemEditable={true}
                         />
                     </Grid>
 

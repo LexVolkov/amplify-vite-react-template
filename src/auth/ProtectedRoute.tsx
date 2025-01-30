@@ -1,5 +1,5 @@
 import {useDispatch, useSelector} from 'react-redux';
-import {initialState, RootState, setUser} from '../redux/store.ts';
+import {RootState, setUser} from '../redux/store.ts';
 import {fetchAuthSession, getCurrentUser} from "aws-amplify/auth";
 import {useEffect, ReactElement, useState} from "react";
 import {CircularProgress} from "@mui/material";
@@ -8,6 +8,8 @@ import {generateClient} from "aws-amplify/api";
 import type {Schema} from "../../amplify/data/resource.ts";
 import NoAccessPage from "./NoAccessPage.tsx";
 import {InitSettings} from "../utils/InitialSettings.ts";
+import {initialState} from "../redux/states/user.ts";
+import {useError} from "../utils/setError.tsx";
 
 interface ProtectedRouteProps {
     groups: string[];
@@ -21,8 +23,10 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
     const user = useSelector((state: RootState) => state.user);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const dispatch = useDispatch();
+    const setError = useError();
 
     const initializeUser = async () => {
+        if (user.isAuth) return;
         try {
             setIsLoading(true);
 
@@ -47,27 +51,31 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
                 userData.groups = [guest];
                 userData.authMode = 'identityPool';
             }
-            if(userData.isAuth) {
-
-                const {data, errors} = await client.models.UserProfile.list({});
-
-                if (data && data.length > 0) {
-                    const profile = data[0];
-                    userData.avatar = profile.avatar;
-                    userData.email = profile.email;
-                    userData.fullName = profile.fullName;
-                    userData.gender = profile.gender;
-                    userData.nickname = profile.nickname;
-                }
-                if (errors) {
-                    throw new Error(errors[0].message);
-                }
+            const {data, errors} = await client.models.UserProfile.list({});
+            if (errors) {
+                setError('#001:01', 'Помилка при отриманні даних користувача', String(errors))
+                return;
             }
-            InitSettings(userData.authMode, userData.groups).then();
+            if (data && data.length > 0) {
+                const profile = data[0];
+                userData.avatar = profile.avatar;
+                userData.email = profile.email;
+                userData.fullName = profile.fullName;
+                userData.gender = profile.gender;
+                userData.nickname = profile.nickname;
+            }
+            InitSettings(userData.authMode, userData.groups).then(
+                (error) => {
+                    if (error) {
+                        setError('#001:02', 'Помилка завантаження налаштувань', error)
+                        return;
+                    }
+                }
+            );
             dispatch(setUser(userData));
         } catch (error) {
-            console.error('Error fetching user data', error);
-        }finally {
+            setError('#001:03', 'Помилка при отриманні даних користувача', (error as Error).message)
+        } finally {
             setIsLoading(false)
         }
     };

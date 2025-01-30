@@ -9,6 +9,9 @@ import ColorModeProvider from "./layots/theme/ColorModeProvider.tsx";
 import {Provider} from 'react-redux';
 import {store} from './redux/store.ts';
 import {BrowserRouter} from "react-router-dom";
+import {closeSnackbar, SnackbarProvider} from "notistack";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 
 Amplify.configure(outputs);
@@ -17,9 +20,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Provider store={store}>
             <ColorModeProvider>
                 <CssBaseline/>
-                <BrowserRouter>
-                    <App/>
-                </BrowserRouter>
+                <SnackbarProvider maxSnack={3}
+                                  action={(snackbarId) => (
+                                      <IconButton onClick={() => closeSnackbar(snackbarId)}>
+                                          <CloseIcon/>
+                                      </IconButton>
+                                  )}>
+                    <BrowserRouter>
+                        <App/>
+                    </BrowserRouter>
+                </SnackbarProvider>
             </ColorModeProvider>
         </Provider>
     </React.StrictMode>

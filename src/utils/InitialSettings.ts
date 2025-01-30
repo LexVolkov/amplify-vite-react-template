@@ -6,13 +6,14 @@ import {accessLevel} from "./AccessLevel.tsx";
 const client = generateClient<Schema>();
 
 export const InitSettings = async (authMode: 'identityPool' | 'userPool', groups: string | string[]) => {
+
     try {
         const {data, errors} = await client.models.Settings.list({
             authMode: authMode
         });
         if (errors) {
-            console.error(errors);
-            return;
+            console.log(errors)
+            return errors[0].message;
         }
         for (const setting of data) {
             if (GlobalSettings[setting.name]) {
@@ -23,7 +24,8 @@ export const InitSettings = async (authMode: 'identityPool' | 'userPool', groups
                         id: setting.id
                     });
                     if (errors) {
-                        console.error(`Error deleting setting with id ${setting.id}:`, errors);
+                        console.log(errors)
+                        return errors[0].message;
                     }
                 }
             }
@@ -40,12 +42,13 @@ export const InitSettings = async (authMode: 'identityPool' | 'userPool', groups
                     });
                     if (errors) {
                         console.error(`Error create setting with key ${key}:`, errors);
-                        return;
+                        return errors[0].message;
                     }
                 }
             }
         }
     } catch (error) {
         console.error(`Error loading settings: ${(error as Error).message}`);
+        return (error as Error).message;
     }
 }

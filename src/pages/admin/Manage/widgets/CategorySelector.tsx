@@ -1,19 +1,28 @@
-import {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    DialogActions,
-    Button,
-    DialogContent,
-    TextField,
-    Dialog,
-    DialogTitle
+    IconButton,
+    Box, Skeleton
 } from '@mui/material';
 import {generateClient} from "aws-amplify/api";
 import type {Schema} from "../../../../../amplify/data/resource.ts";
-import Grid from '@mui/material/Grid2';
+import {RichTreeView} from '@mui/x-tree-view/RichTreeView';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import CheckIcon from '@mui/icons-material/Check';
+import {useTreeItem2Utils} from '@mui/x-tree-view/hooks';
+import {
+    TreeItem2,
+    TreeItem2Label,
+    TreeItem2Props,
+} from '@mui/x-tree-view/TreeItem2';
+import {TreeItem2LabelInput} from '@mui/x-tree-view/TreeItem2LabelInput';
+import {
+    UseTreeItem2LabelInputSlotOwnProps,
+    UseTreeItem2LabelSlotOwnProps,
+} from '@mui/x-tree-view/useTreeItem2';
+
+const ADD_CATEGORY = '...add category';
+const ADD_SUB_CATEGORY = '...add subcategory';
 
 const client = generateClient<Schema>();
 
@@ -21,332 +30,432 @@ interface CategorySelectorProps {
     onCategoryChange?: (categoryId: string) => void;
     onSubCategoryChange?: (subCategoryId: string) => void;
     onError?: (error: string) => void;
+    isItemEditable?: boolean;
 }
 
-export const CategorySelector: FC<CategorySelectorProps> = ({
-                                                                onError,
-                                                                onCategoryChange,
-                                                                onSubCategoryChange,
-                                                            }) => {
-    const [categories, setCategories] = useState<AssetCategory[]>([]);
-    const [subCategories, setSubCategories] = useState<AssetSubCategory[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [selectedSubCategory, setSelectedSubCategory] = useState<string>('');
-    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-    const [isSubCategoryDialogOpen, setIsSubCategoryDialogOpen] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
-    const [newSubCategoryName, setNewSubCategoryName] = useState('');
-    const [categoryEdit, setCategoryEdit] = useState(false);
-    const [subCategoryEdit, setSubCategoryEdit] = useState(false);
+type TreeItemType = {
+    id: string;
+    label: string;
+    children?: TreeItemType[];
+    type: 'category' | 'subcategory';
+};
+
+export const CategorySelector:
+    FC<CategorySelectorProps> = ({
+                                     onError,
+                                     onCategoryChange,
+                                     onSubCategoryChange,
+                                     isItemEditable = false
+                                 }) => {
+    const [treeItems, setTreeItems] = useState<TreeItemType[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             setIsLoading(true);
             try {
-                const { data: categoryData } = await client.models.AssetCategory.list();
-                setCategories(categoryData);
+                const {data: categories} = await client.models.AssetCategory.list(
+                    {
+                        selectionSet: [
+                            'id',
+                            'name',
+                            'subCategory.name',
+                            'subCategory.id']
+                    }
+                );
+
+                const items = categories.map(category => ({
+                    id: `category::${category.id}`,
+                    label: category.name,
+                    type: 'category' as const,
+                    children: [
+                        ...category.subCategory.map(sc => ({
+                            id: `subcategory::${sc.id}`,
+                            label: sc.name,
+                            type: 'subcategory' as const,
+                        })),
+                        ...(isItemEditable ? [{
+                            id: `add_subcategory::${category.id}`,
+                            label: ADD_SUB_CATEGORY,
+                            type: 'subcategory' as const,
+                        }] : [])
+                    ].filter(Boolean) // Удаляем пустые объекты
+                }));
+                if (isItemEditable) {
+                    items.push({
+                        id: `add_category::root`,
+                        label: ADD_CATEGORY,
+                        type: 'category' as const,
+                        children: []
+                    })
+                }
+                setTreeItems(items);
             } catch (err) {
-                onError?.('Error fetching categories: ' + (err instanceof Error ? err.message : String(err)));
+                onError?.('Error fetching data: ' + (err instanceof Error ? err.message : String(err)));
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchCategories().then();
+        fetchData().then();
     }, []);
-    useEffect(() => {
-        if (!selectedCategory) {
-            setSubCategories([]);
-            setSelectedSubCategory('');
-            return;
+
+    const handleNodeSelect = (_event: React.SyntheticEvent, nodeId: string) => {
+        const [type, id] = nodeId.split('::');
+
+
+        if (type === 'category') {
+            onCategoryChange?.(id);
+            onSubCategoryChange?.('');
+        } else if (type === 'subcategory') {
+            onSubCategoryChange?.(id);
+        } else if (type === 'add_category') {
+            handleAdd(nodeId).then();
+        } else if (type === 'add_subcategory') {
+            handleAdd(nodeId).then();
         }
-        const fetchSubCategories = async () => {
+    };
+
+    const handleAdd = async (nodeId: string) => {
+        const [type, id] = nodeId.split('::');
+
+        const promptNewName = window.prompt(`Please enter new ${type} NAME:`);
+        const newName = promptNewName?.trim();
+        if (!newName || newName === '') return;
+
+        try {
             setIsLoading(true);
-            try {
-                const { data: subCategoryData } = await client.models.AssetSubCategory.list({
-                    filter: { categoryId: { eq: selectedCategory } },
+            if (type === 'add_subcategory') {
+                if (id === undefined || id === null || id === '') {
+                    throw new Error('Parent category not found');
+                }
+                const {data, errors} = await client.models.AssetSubCategory.create({
+                    name: newName,
+                    categoryId: id
                 });
-                setSubCategories(subCategoryData);
-            } catch (err) {
-                onError?.('Error fetching subcategories: ' + (err instanceof Error ? err.message : String(err)));
-            } finally {
-                setIsLoading(false);
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                if (data === null) {
+                    throw new Error('Error adding subcategory');
+                }
+                setTreeItems(prev =>
+                    prev.map(item =>
+                        item.id === `category::${id}`
+                            ? {
+                                ...item,
+                                children: [
+                                    {
+                                        id: `subcategory::${data.id}`,
+                                        label: newName,
+                                        type: 'subcategory',
+                                    },
+                                    ...(item.children ? [...item.children] : []), // Копируем `children`, создавая новый массив
+                                ],
+
+                            }
+                            : item
+                    )
+                );
+            } else if (type === 'add_category') {
+                const {data, errors} = await client.models.AssetCategory.create({
+                    name: newName
+                });
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                if (data === null) {
+                    throw new Error('Error adding category');
+                }
+                setTreeItems(prev => [{
+                    id: `category::${data.id}`,
+                    label: newName,
+                    type: 'category',
+                    children: [{
+                        id: `add_subcategory::${data.id}`,
+                        label: ADD_SUB_CATEGORY,
+                        type: 'subcategory' as const,
+                    }]
+                }, ...prev,]);
+            } else {
+                throw new Error('Unknown type');
+            }
+        } catch (err) {
+            onError?.('Error adding item: ' + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleEdit = async (
+        nodeId: string, newName: string
+    ) => {
+
+        setIsLoading(true);
+        const [type, id] = nodeId.split('::');
+
+        try {
+            if (type === 'category') {
+                const {errors} = await client.models.AssetCategory.update({id, name: newName});
+
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                setTreeItems(prev => prev.map(item =>
+                    item.id === nodeId
+                        ? {...item, label: newName}
+                        : item
+                ));
+            } else {
+                const {errors} = await client.models.AssetSubCategory.update({id, name: newName});
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                setTreeItems(prev => prev.map(category => ({
+                    ...category,
+                    children: category.children?.map(sub =>
+                        sub.id === nodeId
+                            ? {...sub, label: newName}
+                            : sub
+                    ) || []
+                })));
+            }
+            return true;
+        } catch (err) {
+            onError?.('Error updating item: ' + (err instanceof Error ? err.message : String(err)));
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+
+    };
+
+    const handleDelete = async (nodeId: string) => {
+
+        setIsLoading(true);
+        const [type, id] = nodeId.split('::');
+
+        try {
+            if (type === 'category') {
+                const targetCategory = treeItems.find(item => item?.id === nodeId);
+                const targetCategoryChildren = targetCategory?.children;
+                const filterTargetCategoryChildren = targetCategoryChildren?.filter((ch) => (ch.label !== ADD_SUB_CATEGORY))
+                console.log(filterTargetCategoryChildren)
+                if (filterTargetCategoryChildren && filterTargetCategoryChildren?.length > 0) {
+                    throw new Error('Cannot delete category with subcategories');
+                }
+                const {errors} = await client.models.AssetCategory.delete({
+                    id: id || '',
+                });
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                setTreeItems(prev => prev.filter(item => item.id !== nodeId));
+            } else {
+                const {data: assetData, errors: assetErrors} = await client.models.AssetSubCategory.get(
+                    {id: id},
+                    {selectionSet: ['assets.id']}
+                );
+                if (assetErrors) {
+                    throw new Error(assetErrors.map(e => e.message).join(', '));
+                }
+                if (assetData && assetData.assets && assetData.assets.length > 0) {
+                    throw new Error("Cannot delete subcategory with assets");
+                }
+                const {errors} = await client.models.AssetSubCategory.delete({id});
+                if (errors) {
+                    throw new Error(errors.map(e => e.message).join(', '));
+                }
+                setTreeItems(prev => prev.map(category => ({
+                    ...category,
+                    children: category.children?.filter(sub => sub.id !== nodeId) || []
+                })));
+            }
+            onCategoryChange?.('');
+            onSubCategoryChange?.('');
+        } catch (err) {
+            onError?.('Error deleting item: ' + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    interface CustomLabelProps extends UseTreeItem2LabelSlotOwnProps {
+        editable: boolean;
+        editing: boolean;
+        toggleItemEditing: () => void;
+        itemClick: () => void;
+    }
+
+    function CustomLabel({
+                             editing,
+                             editable,
+                             children,
+                             toggleItemEditing,
+                             itemClick,
+                             ...other
+                         }: CustomLabelProps) {
+        return (
+            <>
+                <TreeItem2Label
+                    {...other}
+                    editable={editable}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        justifyContent: 'space-between',
+                    }}
+                    onClick={itemClick}
+                >
+                    {children}
+
+                </TreeItem2Label>
+                {editable ? (
+                    (children !== ADD_SUB_CATEGORY
+                        && children !== ADD_CATEGORY) &&
+                    <IconButton
+                        size="small"
+                        onClick={toggleItemEditing}
+                        sx={{color: 'text.secondary'}}
+                    >
+                        <EditOutlinedIcon fontSize="small"/>
+                    </IconButton>
+                ) : null}
+                {editing && null}
+            </>
+        );
+    }
+
+    interface CustomLabelInputProps extends UseTreeItem2LabelInputSlotOwnProps {
+        handleCancelItemLabelEditing: (event: React.SyntheticEvent) => void;
+        handleSaveItemLabel: (event: React.SyntheticEvent, label: string) => void;
+        value: string;
+    }
+
+    function CustomLabelInput(props: Omit<CustomLabelInputProps, 'ref'>) {
+        const {handleCancelItemLabelEditing, handleSaveItemLabel, value, ...other} =
+            props;
+
+        return (
+            <>
+                {isLoading ?
+                    <Skeleton variant="text" sx={{fontSize: '1rem'}} width={'100%'} animation="wave" />
+                    : (
+                        <React.Fragment>
+                            <TreeItem2LabelInput style={{backgroundColor: 'white'}} {...other} value={value}/>
+                            <IconButton
+                                color="success"
+                                size="small"
+                                onClick={(event: React.MouseEvent) => {
+                                    handleSaveItemLabel(event, value);
+                                }}
+                            >
+                                <CheckIcon fontSize="small"/>
+                            </IconButton>
+                            <IconButton color="error" size="small" onClick={handleCancelItemLabelEditing}>
+                                <CloseRoundedIcon fontSize="small"/>
+                            </IconButton>
+                        </React.Fragment>
+                    )
+                }
+            </>
+
+        )
+            ;
+    }
+
+    const CustomTreeItem2 = React.forwardRef(function CustomTreeItem2(
+        props: TreeItem2Props,
+        ref: React.Ref<HTMLLIElement>,
+    ) {
+        const {interactions, status} = useTreeItem2Utils({
+            itemId: props.itemId,
+            children: props.children,
+        });
+
+        const handleContentDoubleClick: UseTreeItem2LabelSlotOwnProps['onDoubleClick'] = (
+            event,
+        ) => {
+            event.defaultMuiPrevented = true;
+        };
+
+        const handleInputBlur: UseTreeItem2LabelInputSlotOwnProps['onBlur'] = (event) => {
+            event.defaultMuiPrevented = true;
+        };
+
+        const handleInputKeyDown: UseTreeItem2LabelInputSlotOwnProps['onKeyDown'] = (
+            event,
+        ) => {
+            event.defaultMuiPrevented = true;
+            if (event.key === 'Enter') {
+                const target = event.target as HTMLInputElement;
+                handleSave(event, target.value || '');
             }
         };
-        fetchSubCategories().then();
-    }, [selectedCategory]);
 
-    const handleCategoryChange = (categoryId: string) => {
-        if (categoryId === 'add') {
-            setIsCategoryDialogOpen(true);
-        } else if (categoryId === 'edit') {
-            setNewCategoryName(categories.find(c => c.id === selectedCategory)?.name || '' );
-            setCategoryEdit(true);
-            setIsCategoryDialogOpen(true);
-        } else  if (categoryId === 'delete') {
-            const confirmDelete = window.confirm('Are you sure you want to delete this category?');
-            if (confirmDelete) {
-                handleDeleteCategory().then();
+        const handleSave = (event: React.SyntheticEvent, newLabel: string) => {
+            if (newLabel === '') {
+                const confirmDelete = window.confirm('Are you sure you want to delete this category?');
+                if (confirmDelete) {
+                    handleDelete(props.itemId).then();
+                } else {
+                    interactions.handleCancelItemLabelEditing(event);
+                }
+            } else {
+                handleEdit(props.itemId, newLabel)
+                    .then((result) => {
+                        if (result) {
+                            interactions.handleSaveItemLabel(event, newLabel);
+                        } else {
+                            interactions.handleCancelItemLabelEditing(event);
+                        }
+                    });
             }
-        }else{
-            setSelectedSubCategory('');
-            onSubCategoryChange?.('');
-            setSelectedCategory(categoryId);
-            onCategoryChange?.(categoryId);
 
-        }
-    };
-    const handleAddCategory = async () => {
-        setIsLoading(true);
-        setIsCategoryDialogOpen(false);
 
-        if (!newCategoryName) return;
-        try {
-            const newCategoryData = await client.models.AssetCategory.create({
-                name: newCategoryName,
-            });
-            setCategories((prev) => [...prev, newCategoryData.data]);
-            setSelectedCategory(newCategoryData.data?.id || '')
-        } catch (err) {
-            onError?.('Error adding category: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setNewCategoryName('');
-            setIsLoading(false);
+        };
+        const handleItemClick = (
+            event: React.SyntheticEvent) => {
+            handleNodeSelect(event, props.itemId)
         }
-    };
-    const handleEditCategory = async () => {
-        setIsLoading(true);
-        setIsCategoryDialogOpen(false);
-        setCategoryEdit(false);
-        try {
-            const updatedCategoryData = await client.models.AssetCategory.update({
-                id: selectedCategory,
-                name: newCategoryName,
-            });
-            setCategories((prev) => prev.map(category =>
-                category.id === selectedCategory ? updatedCategoryData.data : category
-            ));
-        } catch (err) {
-            onError?.('Error editing category: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setNewCategoryName('');
-            setIsLoading(false);
-        }
-    };
-
-    const handleDeleteCategory = async () => {
-        if(!selectedCategory) return;
-        if(subCategories.length > 0){
-            onError?.("Cannot delete category with subcategories");
-            return;
-        }
-        try {
-            const categoryId:string | null = selectedCategory;
-            setIsLoading(true);
-            await client.models.AssetCategory.delete({ id: categoryId });
-            setCategories((prev) => prev.filter(category => category.id !== categoryId));
-        } catch (err) {
-            onError?.('Error deleting category: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setSelectedCategory('')
-            setIsLoading(false);
-        }
-    };
-    const handleSubCategoryChange = (subCategoryId: string) => {
-        if (subCategoryId === 'add') {
-            setIsSubCategoryDialogOpen(true);
-        } else if (subCategoryId === 'edit') {
-            setNewSubCategoryName(subCategories.find(c => c.id === selectedSubCategory)?.name || '' );
-            setSubCategoryEdit(true);
-            setIsSubCategoryDialogOpen(true);
-        } else  if (subCategoryId === 'delete') {
-            const confirmDelete = window.confirm('Are you sure you want to delete this subcategory?');
-            if (confirmDelete) {
-                handleDeleteSubCategory().then();
-            }
-        }else{
-            setSelectedSubCategory(subCategoryId);
-            onSubCategoryChange?.(subCategoryId);
-        }
-    };
-    const handleAddSubCategory = async () => {
-        setIsLoading(true);
-        setIsSubCategoryDialogOpen(false);
-
-        if (!newSubCategoryName) return;
-        try {
-            const newSubCategoryData = await client.models.AssetSubCategory.create({
-                name: newSubCategoryName,
-                categoryId: selectedCategory
-            });
-            setSubCategories((prev) => [...prev, newSubCategoryData.data]);
-            setSelectedSubCategory(newSubCategoryData.data?.id || '')
-        } catch (err) {
-            onError?.('Error adding subcategory: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setNewSubCategoryName('');
-            setIsLoading(false);
-        }
-    };
-    const handleEditSubCategory = async () => {
-        setIsLoading(true);
-        setIsSubCategoryDialogOpen(false);
-        setSubCategoryEdit(false);
-        try {
-            const updatedSubCategoryData = await client.models.AssetSubCategory.update({
-                id: selectedSubCategory,
-                name: newSubCategoryName,
-            });
-            setSubCategories((prev) => prev.map(category =>
-                category.id === selectedSubCategory ? updatedSubCategoryData.data : category
-            ));
-        } catch (err) {
-            onError?.('Error editing subcategory: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setNewSubCategoryName('');
-            setIsLoading(false);
-        }
-    };
-    const handleDeleteSubCategory = async () => {
-        setIsLoading(true);
-        if(!selectedSubCategory) return;
-        const subCategoryId:string | null = selectedSubCategory;
-        try {
-            const {data: assetData} = await client.models.AssetSubCategory.get(
-                {id: subCategoryId},
-                {selectionSet: ['assets.*']}
-            );
-            if(assetData && assetData.assets && assetData.assets.length > 0){
-                onError?.("Cannot delete subcategory with assets");
-                return;
-            }
-            await client.models.AssetSubCategory.delete({ id: subCategoryId });
-            setSubCategories((prev) => prev.filter(sc => sc.id !== subCategoryId));
-            setSelectedSubCategory('');
-        } catch (err) {
-            onError?.('Error deleting subcategory: ' + (err instanceof Error ? err.message : String(err)));
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        return (
+            <TreeItem2
+                {...props}
+                ref={ref}
+                slots={{label: CustomLabel, labelInput: CustomLabelInput}}
+                slotProps={{
+                    label: {
+                        onDoubleClick: handleContentDoubleClick,
+                        editable: status.editable,
+                        editing: status.editing,
+                        toggleItemEditing: interactions.toggleItemEditing,
+                        itemClick: handleItemClick,
+                    } as CustomLabelProps,
+                    labelInput: {
+                        onBlur: handleInputBlur,
+                        onKeyDown: handleInputKeyDown,
+                        handleCancelItemLabelEditing: interactions.handleCancelItemLabelEditing,
+                        handleSaveItemLabel: handleSave,
+                    } as CustomLabelInputProps,
+                }}
+            />
+        );
+    });
+    if(treeItems.length === 0 && isLoading){
+        return (
+            <Skeleton variant="text" sx={{fontSize: '1rem'}} width={'100%'} animation="wave" />
+        )
+    }
     return (
-        <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                    <InputLabel>Category</InputLabel>
-                    <Select
-                        value={selectedCategory}
-                        onChange={(e) => handleCategoryChange(e.target.value)}
-                        disabled={isLoading}
-                    >
-                        <MenuItem value="">
-                            <em>None</em>
-                        </MenuItem>
-                        {categories.map((category, index) => (
-                            <MenuItem key={index} value={category.id}>
-                                {category.name}
-                            </MenuItem>
-                        ))}
-                        <MenuItem value={"add"}>
-                            Add category...
-                        </MenuItem>
-                        <MenuItem value={"edit"}>
-                            Edit category...
-                        </MenuItem>
-                        <MenuItem value={"delete"}>
-                            Delete category...
-                        </MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6}}>
-                <FormControl fullWidth>
-                    <InputLabel>Subcategory</InputLabel>
-                    <Select
-                        value={selectedSubCategory}
-                        onChange={(e) => handleSubCategoryChange(e.target.value)}
-                        disabled={isLoading || !selectedCategory}
-                    >
-                        <MenuItem value="">
-                            <em>None</em>
-                        </MenuItem>
-                        {subCategories.map((subCategory) => (
-                            <MenuItem key={subCategory.id} value={subCategory.id}>
-                                {subCategory.name}
-                            </MenuItem>
-                        ))}
-                        <MenuItem value={"add"}>
-                            Add subcategory...
-                        </MenuItem>
-                        <MenuItem value={"edit"}>
-                            Edit subcategory...
-                        </MenuItem>
-                        <MenuItem value={"delete"}>
-                            Delete subcategory...
-                        </MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
-            <Dialog open={isCategoryDialogOpen} onClose={() => setIsCategoryDialogOpen(false)}>
-                <DialogTitle>{categoryEdit?"Edit Category":"Add New Category"}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Category Name"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        sx={{mt: 2}}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => {
-                        if(categoryEdit){
-                            handleEditCategory().then();
-                        }else {
-                            handleAddCategory().then();
-                        }}}
-                        sx={{mt: 1}}
-                    >
-                        {categoryEdit?"Save":"Add"}
-                    </Button>
-                    <Button onClick={() => setIsCategoryDialogOpen(false)}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog open={isSubCategoryDialogOpen} onClose={() => setIsSubCategoryDialogOpen(false)}>
-                <DialogTitle>{subCategoryEdit?"Edit SubCategory":"Add New SubCategory"}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="SubCategory Name"
-                        value={newSubCategoryName}
-                        onChange={(e) => setNewSubCategoryName(e.target.value)}
-                        sx={{mt: 2}}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => {
-                            if(subCategoryEdit){
-                                handleEditSubCategory().then();
-                            }else {
-                                handleAddSubCategory().then();
-                            }}}
-                        sx={{mt: 1}}
-                    >
-                        {subCategoryEdit?"Save":"Add"}
-                    </Button>
-                    <Button onClick={() => setIsSubCategoryDialogOpen(false)}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Grid>
+        <Box sx={{minHeight: 10, position: 'relative'}}>
+            <RichTreeView
+                items={treeItems}
+                experimentalFeatures={{labelEditing: true}}
+                isItemEditable={isItemEditable}
+                slots={{item: CustomTreeItem2}}
+                sx={{p: 1}}
+                expansionTrigger="iconContainer"
+            />
+        </Box>
     );
 };

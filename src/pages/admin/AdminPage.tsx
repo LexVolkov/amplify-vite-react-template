@@ -1,6 +1,5 @@
 import {useState} from "react";
 import AdminCharacterPage from "./Manage/AdminCharacterPage.tsx";
-import AdminItemPage from "./Manage/AdminItemPage.tsx";
 import AdminLogPage from "./Manage/AdminLogPage.tsx";
 import AdminSettingPage from "./Manage/AdminSettingPage.tsx";
 import AdminServerPage from "./Manage/AdminServerPage.tsx";
@@ -9,7 +8,6 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import DnsIcon from '@mui/icons-material/Dns';
 import GroupIcon from '@mui/icons-material/Group';
-import CategoryIcon from '@mui/icons-material/Category';
 import SettingsIcon from '@mui/icons-material/Settings';
 import HistoryIcon from '@mui/icons-material/History';
 import Button from "@mui/material/Button/Button";
@@ -23,7 +21,6 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 const adminPages = [
     {name: "Зміни", component: <AdminServerPage/>, icon: <DnsIcon fontSize="large"/>},
     {name: "Персонажі", component: <AdminCharacterPage/>, icon: <GroupIcon fontSize="large"/>},
-    {name: "Предмети", component: <AdminItemPage/>, icon: <CategoryIcon fontSize="large"/>},
     {name: "Налаштування", component: <AdminSettingPage/>, icon: <SettingsIcon fontSize="large"/>},
     {name: "Графіка", component: <AdminAssetPage/>, icon: <ImageIcon fontSize="large"/>},
     {name: "Логи", component: <AdminLogPage/>, icon: <HistoryIcon fontSize="large"/>},

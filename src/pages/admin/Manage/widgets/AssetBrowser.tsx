@@ -1,4 +1,5 @@
 import {
+    Alert,
     Box,
     Chip,
     FormControl,
@@ -8,11 +9,12 @@ import {
     Typography
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {generateClient} from "aws-amplify/data";
 import CancelIcon from '@mui/icons-material/Cancel';
 import AssetIcon from "../../../../components/AssetIcon.tsx";
 import {Schema} from "../../../../../amplify/data/resource.ts";
+import {CategorySelector} from "./CategorySelector.tsx";
 
 const client = generateClient<Schema>();
 
@@ -21,41 +23,16 @@ interface AssetBrowserProps {
     onChange: (value: string) => void;
 }
 const AssetBrowser = ({value, onChange}: AssetBrowserProps) => {
-    const [categories, setCategories] = useState<AssetCategory[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [subCategories, setSubCategories] = useState<AssetSubCategory[]>([]);
     const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [availableTags, setAvailableTags] = useState<Tag[]>([]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const loadCategories = async () => {
-            setIsLoading(true);
-            const {data} = await client.models.AssetCategory.list();
-            setCategories(data);
-            setIsLoading(false);
-        };
-        loadCategories().then();
-    }, []);
+
     const handleAssetSelect = (assetId: string) => {
         onChange(assetId);
-    };
-    const handleCategorySelect = async (categoryId: string) => {
-        setIsLoading(true);
-        try {
-            const {data} = await client.models.AssetSubCategory.list({
-                filter: {categoryId: {eq: categoryId}}
-            });
-            setSubCategories(data);
-            setSelectedCategory(categoryId);
-            setSelectedSubCategory(null);
-            setAssets([]);
-            setAvailableTags([]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleSubCategorySelect = async (subCategoryId: string) => {
@@ -96,36 +73,17 @@ const AssetBrowser = ({value, onChange}: AssetBrowserProps) => {
 
     return (
         <Box>
-            <FormControl fullWidth margin="normal">
-                <InputLabel>Категория</InputLabel>
-                <Select
-                    value={selectedCategory || ''}
-                    onChange={(e) => handleCategorySelect(e.target.value as string)}
-                    disabled={isLoading}
-                >
-                    {categories.map(category => (
-                        <MenuItem key={category.id} value={category.id}>
-                            {category.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+            {error && (
+                <Alert severity="error" sx={{mb: 2}} onClose={() => setError(null)}>
+                    {error}
+                </Alert>
+            )}
 
-            <FormControl fullWidth margin="normal">
-                <InputLabel>Подкатегория</InputLabel>
-                <Select
-                    value={selectedSubCategory || ''}
-                    onChange={(e) => handleSubCategorySelect(e.target.value as string)}
-                    disabled={!selectedCategory || isLoading}
-                >
-                    {subCategories.map(subCategory => (
-                        <MenuItem key={subCategory.id} value={subCategory.id}>
-                            {subCategory.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
+            <CategorySelector
+                onSubCategoryChange={
+                    (subCId) => handleSubCategorySelect(subCId)}
+                onError={setError}
+            />
             <FormControl fullWidth margin="normal">
                 <InputLabel>Теги</InputLabel>
                 <Select

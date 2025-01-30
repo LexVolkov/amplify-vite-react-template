@@ -47,7 +47,6 @@ function AdminLogPage() {
                     id: selectedServerId
                 },
                 {selectionSet: ['name', 'characters.*', 'characters.transactions.*']});
-            console.log(data)
             if (errors) {
                 console.error(errors);
                 setError('Failed to load logs. Please refresh the page.');
