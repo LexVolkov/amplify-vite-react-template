@@ -29,7 +29,7 @@ export const ServerSelector: FC<ServerSelectorProps> = ({
                 const { data, errors } = await client.models.Server.list({ authMode:user.authMode });
 
                 if (errors) {
-                    setError('#003:01', 'Помилка при отриманні списку змін', String(errors))
+                    setError('#003:01', 'Помилка при отриманні списку змін', errors.length >0?errors[0]?.message:'')
                     console.error('Error fetching Servers:', errors);
                     return;
                 }

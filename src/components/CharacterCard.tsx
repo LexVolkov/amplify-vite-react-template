@@ -1,30 +1,34 @@
 // CharacterCard.tsx
-import { Card, CardContent, Typography, Avatar, Box, LinearProgress, useTheme } from '@mui/material';
+import {Card, CardContent, Typography, Avatar, Box, LinearProgress, useTheme} from '@mui/material';
 import AssetIcon from './AssetIcon';
 import React from "react";
 import {GlobalSettings} from "../utils/DefaultSettings.ts";
-
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 interface CharacterCardProps {
     character: Character;
     place?: number;
 }
 
-const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
+const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
     const theme = useTheme();
 
     // Рассчитываем уровень и прогресс
-    const levelUpgradeExp: number = GlobalSettings.LevelUpgradeExp.value;
+    const levelUpgradeExp: number = Number(GlobalSettings.LevelUpgradeExp.value);
     const currentLevel = Math.floor(character.experience / levelUpgradeExp);
     const progress = ((character.experience % levelUpgradeExp) / levelUpgradeExp) * 100;
 
     const getPlaceColor = (position?: number) => {
         if (!position) return theme.palette.secondary.main;
         switch (position) {
-            case 1: return '#ffc400'; // Золото
-            case 2: return '#ff0d8e'; // Серебро
-            case 3: return '#59a608'; // Бронза
-            default: return theme.palette.primary.main;
+            case 1:
+                return '#ffc400'; // Золото
+            case 2:
+                return '#ff0d8e'; // Серебро
+            case 3:
+                return '#59a608'; // Бронза
+            default:
+                return theme.palette.primary.main;
         }
     };
 
@@ -138,7 +142,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                             assetId={GlobalSettings.LevelIcon.value}
                             size={30}
                         />
-                        <Typography variant="body2" sx={{ color: theme.palette.text.primary, flexGrow: 1 }}>
+                        <Typography variant="body2" sx={{color: theme.palette.text.primary, flexGrow: 1}}>
                             Рівень
                         </Typography>
                         <Typography variant="body2" sx={{
@@ -149,7 +153,6 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                             {currentLevel}
                         </Typography>
                     </Box>
-
 
 
                     {/* Experience Progress */}
@@ -168,8 +171,8 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                             assetId={GlobalSettings.ExperienceIcon.value}
                             size={30}
                         />
-                        <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="body2" sx={{ color: theme.palette.text.primary, mb: 0.5 }}>
+                        <Box sx={{flexGrow: 1}}>
+                            <Typography variant="body2" sx={{color: theme.palette.text.primary, mb: 0.5}}>
                                 Досвід
                             </Typography>
                             <LinearProgress
@@ -212,7 +215,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                             assetId={GlobalSettings.CoinIcon.value}
                             size={30}
                         />
-                        <Typography variant="body2" sx={{ color: theme.palette.text.primary, flexGrow: 1 }}>
+                        <Typography variant="body2" sx={{color: theme.palette.text.primary, flexGrow: 1}}>
                             Монети
                         </Typography>
                         <Typography variant="body2" sx={{
@@ -223,6 +226,59 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, place }) => {
                             {character.coins}
                         </Typography>
                     </Box>
+                    {/* achievements */}
+                    {character.achievements.length > 0 ? (
+                        <>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1,
+                            borderRadius: '8px',
+                            transition: 'background 0.3s',
+                            '&:hover': {
+                                background: theme.palette.action.hover
+                            }
+                        }}>
+                            <EmojiEventsIcon sx={{color: theme.palette.secondary.main}}/>
+                            <Typography variant="body2" sx={{color: theme.palette.text.primary}}>
+                                Досягнення:
+                            </Typography>
+
+                        </Box>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1,
+                            borderRadius: '8px',
+                            transition: 'background 0.3s',
+                            '&:hover': {
+                                background: theme.palette.action.hover
+                            }
+                        }}>
+                            <Box
+                                sx={{
+                                    border: '1px solid black',
+                                    padding: '5px',
+                                    margin: '1px',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {character.achievements.map((a: Achievement, index: number) => (
+                                    <Typography variant="body2" key={a.id} sx={{
+                                        fontWeight: 'bold',
+                                        color: theme.palette.primary.contrastText,
+                                        textShadow: `0 0 10px ${theme.palette.primary.main}`
+                                    }}>
+                                        {index + 1} - {a.content}
+                                        {index < character.achievements.length - 1 && <br/>}
+                                    </Typography>
+                                ))}
+                            </Box>
+                        </Box>
+                        </>
+                    ) : null}
                 </Box>
             </CardContent>
         </Card>

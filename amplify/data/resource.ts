@@ -20,6 +20,7 @@ const schema = a.schema({
             serverId: a.id(),
             server: a.belongsTo('Server', 'serverId'),
             transactions: a.hasMany('Transaction', 'characterId'),
+            achievements: a.hasMany('Achievement', 'characterId'),
         })
         .authorization((allow) => [
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
@@ -30,6 +31,20 @@ const schema = a.schema({
             allow.authenticated().to(["read"]),
         ]),
 
+    Achievement: a
+        .model({
+            from: a.id(),
+            characterId: a.id(),
+            content: a.string(),
+            character: a.belongsTo('Character', 'characterId'),
+        })
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
+            allow.groups([accessLevel.moder]).to(["read", "update"]),
+            allow.groups([accessLevel.member]).to(["read"]),
+            allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
+        ]),
 
     Server: a
         .model({

@@ -12,8 +12,8 @@ function App() {
     useEffect(() => {
         if(notification.notificationMessage){
             const type = notification.notificationType;
-            const message = notification.notificationCode +': '+ notification.notificationMessage +' ('+notification.notificationDetails+')';
-            //console.log(`error: ${message} info: ${notification.notificationDetails}`)
+            const details = notification.notificationDetails !== '' && notification.notificationDetails !== null ? ' ('+ notification.notificationDetails +')': '';
+            const message = notification.notificationCode +': '+ notification.notificationMessage + details;
             enqueueSnackbar(message, {variant: type})
         }
 

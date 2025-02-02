@@ -29,10 +29,10 @@ export default function CharacterPage() {
 
             const {data: characterData, errors} = await client.models.Server.get(
                 {id: selectedServerId},
-                {selectionSet: ['characters.*'], authMode:user.authMode}
+                {selectionSet: ['characters.*', 'characters.achievements.*'], authMode:user.authMode}
             );
             if (errors) {
-                setError('#002:01', 'Помилка при отриманні списку персонажів', String(errors))
+                setError('#002:01', 'Помилка при отриманні списку персонажів', errors.length >0?errors[0]?.message:'')
                 console.error('Error fetching Chars:', errors);
                 return;
             }

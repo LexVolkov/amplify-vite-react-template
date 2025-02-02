@@ -53,7 +53,7 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
             }
             const {data, errors} = await client.models.UserProfile.list({});
             if (errors) {
-                setError('#001:01', 'Помилка при отриманні даних користувача', String(errors))
+                setError('#001:01', 'Помилка при отриманні даних користувача', errors.length >0?errors[0]?.message:'')
                 return;
             }
             if (data && data.length > 0) {

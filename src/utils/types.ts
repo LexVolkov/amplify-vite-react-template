@@ -10,7 +10,7 @@ type SettingValueType =
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SettingRecord = {
-    value: any;
+    value: string;
     type: SettingValueType;
     order: number;
 }
@@ -76,5 +76,9 @@ type Setting = Schema["Setting"]["type"];
 // @ts-expect-error
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type UserProfile = Schema["UserProfile"]["type"];
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Achievement = Schema["Achievement"]["type"];
 
 

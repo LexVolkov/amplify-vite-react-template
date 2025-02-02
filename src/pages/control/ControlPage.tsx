@@ -3,7 +3,7 @@ import {useState, useEffect} from 'react';
 import {generateClient} from 'aws-amplify/data';
 import {
     TextField,
-    Paper, Skeleton, Alert,
+    Paper, Skeleton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import Typography from "@mui/material/Typography";
@@ -15,6 +15,9 @@ import {useSelector} from "react-redux";
 import {RootState} from "../../redux/store.ts";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {GlobalSettings} from "../../utils/DefaultSettings.ts";
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import {useError} from "../../utils/setError.tsx";
+import Box from "@mui/material/Box";
 
 
 const client = generateClient<Schema>();
@@ -26,7 +29,7 @@ export default function ControlPage() {
     const [searchQuery, setSearchQuery] = useState<string | null>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLoadingCharsId, setIsLoadingCharsId] = useState<string[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const setError = useError();
 
     useEffect(() => {
         if (selectedServerId) fetchCharacters().then();
@@ -37,16 +40,26 @@ export default function ControlPage() {
         try {
             setIsLoading(true);
             const {data, errors} = await client.models.Character.list({
-                filter: {serverId: {eq: selectedServerId}}
+                filter: {serverId: {eq: selectedServerId}},
+                selectionSet: [
+                    'id',
+                    'nickname',
+                    'coins',
+                    'experience',
+                    'level',
+                    'characterAvatar',
+                    'serverId',
+                    'achievements.*']
             });
             if (errors) {
-                console.error(errors);
-                setError('Помилка при завантаженні персонажів');
+                setError('#004:01', 'Помилка при отриманні списку персонажів',errors.length >0?errors[0]?.message:'')
+                console.error('Error fetching characters:', errors);
+                return;
             }
             setCharacters(data);
         } catch (error) {
+            setError('#004:02', 'Помилка при отриманні даних персонажів', (error as Error).message)
             console.error('Error fetching characters:', error);
-            setError('Помилка при завантаженні персонажів');
         } finally {
             setIsLoading(false);
         }
@@ -58,17 +71,17 @@ export default function ControlPage() {
             setIsLoadingCharsId((prev: string[]) => [...prev, character.id]);
 
             const currentCoin: number = character.coins || 0;
-            const coinsAdded: number = GlobalSettings.CoinsAdded.value;
+            const coinsAdded: number = Number(GlobalSettings.CoinsAdded.value);
             const resultCoin: number = minus ? currentCoin - coinsAdded : currentCoin + coinsAdded;
 
             const currentExperience: number = character.experience || 0;
-            const coinsExp: number = GlobalSettings.CoinsExp.value;
+            const coinsExp: number = Number(GlobalSettings.CoinsExp.value);
             const resultExperience: number = minus
                 ? currentExperience
                 : currentExperience + (coinsAdded * coinsExp);
 
             const currentLevel: number = character.level || 1;
-            const levelUpgradeExp: number = GlobalSettings.LevelUpgradeExp.value;
+            const levelUpgradeExp: number = Number(GlobalSettings.LevelUpgradeExp.value);
             const resultLevel = resultExperience > 0
                 ? Math.floor(resultExperience / levelUpgradeExp)
                 : currentLevel;
@@ -78,10 +91,19 @@ export default function ControlPage() {
                 coins: resultCoin,
                 experience: resultExperience,
                 level: resultLevel,
-            });
+            },{selectionSet: [
+                    'id',
+                    'nickname',
+                    'coins',
+                    'experience',
+                    'level',
+                    'characterAvatar',
+                    'serverId',
+                    'achievements.*']});
             if (errors) {
-                console.error(errors);
-                setError('Помилка при оновленні монет');
+                setError('#004:03', 'Помилка при оновленні монет', errors.length >0?errors[0]?.message:'')
+                console.error('Error update character:', errors);
+                return;
             }
             const {errors: errorsTrans} = await client.models.Transaction.create({
                 from: user?.userId || '',
@@ -90,13 +112,48 @@ export default function ControlPage() {
                 reason: 'Coins added',
             });
             if (errorsTrans) {
-                console.error(errorsTrans);
-                setError('Помилка при запису логів');
+                setError('#004:04', 'Помилка запису логів', errorsTrans.length >0?errorsTrans[0]?.message:'')
+                console.error('Error create logs:', errors);
             }
             setCharacters((prev: Character[]) => prev.map((char: Character) => char.id === character.id ? data : char));
         } catch (error) {
-            console.error('Error update character:', error);
-            setError('Помилка при оновленні монет');
+            setError('#004:05', 'Помилка при оновленні монет', (error as Error).message)
+            console.error('Error update characters:', error);
+        } finally {
+            setIsLoadingCharsId((prev: string[]) => prev.filter((id: string) => id !== character.id));
+        }
+    };
+
+    const handleAddAchievement = async (character: Character) => {
+        const promptNewAchievement = window.prompt(`Введіть досягнення для персонажа ${character.name}:`);
+        const newAchievement = promptNewAchievement?.trim();
+        if(newAchievement === ''){
+            setError('#004:06', 'Введіть досягнення!')
+            return;
+        }
+        try {
+            setIsLoadingCharsId((prev: string[]) => [...prev, character.id]);
+
+            const {data, errors} = await client.models.Achievement.create({
+                from: user.userId,
+                characterId: character.id,
+                content: newAchievement,
+            });
+            if (errors) {
+                setError('#004:07', 'Помилка при створенні нового досягнення', errors.length >0?errors[0]?.message:'')
+                console.error('Error create achievement:', errors);
+                return;
+            }
+            setCharacters((prev: Character[]) =>
+                prev.map((char: Character) =>
+                    char.id === character.id
+                        ? { ...char, achievements: char.achievements.concat(data) }
+                        : char
+                )
+            );
+        } catch (error) {
+            setError('#004:08', 'Помилка при створенні нового досягнення', (error as Error).message)
+            console.error('Error create achievement:', error);
         } finally {
             setIsLoadingCharsId((prev: string[]) => prev.filter((id: string) => id !== character.id));
         }
@@ -113,11 +170,6 @@ export default function ControlPage() {
                 <Typography variant="h4" gutterBottom>
                     Керування
                 </Typography>
-                {error && (
-                    <Alert severity="error" sx={{mb: 2}} onClose={() => setError(null)}>
-                        {error}
-                    </Alert>
-                )}
             </Grid>
             <Grid size={{xs: 12, md: 12}}>
                 <Paper elevation={3} sx={{padding: 2}}>
@@ -149,7 +201,7 @@ export default function ControlPage() {
                         filteredCharacters.map((character) => (
                             <Grid direction={{'xs': 'column', 'md': 'row'}} container spacing={2} key={character.id}
                                   sx={{borderBottom: '1px solid #ddd', py: 1}}>
-                                <Grid size={{xs: 12, md: 6}} direction={'row'} container spacing={2} >
+                                <Grid size={{xs: 12, md: 4}} direction={'row'} container spacing={2}>
                                     <Grid size={{xs: 6, md: 2}}>
                                         <Typography variant="h6" color={'textPrimary'} style={{fontWeight: 'bold'}}>
                                             {character.nickname}
@@ -166,9 +218,9 @@ export default function ControlPage() {
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid direction={'row'}  size={{xs: 12, md: 6}} container spacing={2}
-                                style={{marginBottom: '10px'}}>
-                                    <Grid size={{xs: 4, md: 3}} sx={{textAlign: 'right'}}>
+                                <Grid direction={'row'} size={{xs: 12, md: 4}} container spacing={2}
+                                      style={{marginBottom: '10px'}}>
+                                    <Grid size={{xs: 4, md: 4}} sx={{textAlign: 'right'}}>
                                         <LoadingButton
                                             sx={{py: 1, mr: 1}}
                                             loading={isLoadingCharsId.includes(character.id)}
@@ -180,12 +232,12 @@ export default function ControlPage() {
                                             Відняти
                                         </LoadingButton>
                                     </Grid>
-                                    <Grid size={{xs: 4, md: 2}} sx={{textAlign: 'center'}}>
+                                    <Grid size={{xs: 4, md: 3}} sx={{textAlign: 'center'}}>
                                         <Typography variant="h6">
                                             Монети: {character.coins}
                                         </Typography>
                                     </Grid>
-                                    <Grid size={{xs: 4, md: 3}} sx={{textAlign: 'left'}}>
+                                    <Grid size={{xs: 4, md: 4}} sx={{textAlign: 'left'}}>
                                         <LoadingButton
                                             sx={{py: 1, ml: 1}}
                                             loading={isLoadingCharsId.includes(character.id)}
@@ -198,10 +250,46 @@ export default function ControlPage() {
                                         </LoadingButton>
                                     </Grid>
                                 </Grid>
+                                <Grid direction={'row'} size={{xs: 12, md: 4}} container spacing={2}
+                                      style={{marginBottom: '10px'}}>
+                                    <Grid size={{xs: 12, md: 6}} sx={{textAlign: 'right'}}>
+                                        <LoadingButton
+                                            loading={isLoadingCharsId.includes(character.id)}
+                                            onClick={() => handleAddAchievement(character)}
+                                            endIcon={<EmojiEventsIcon/>}
+                                            variant={'outlined'}
+                                            color={'primary'}
+                                        >
+                                            +досягнення
+                                        </LoadingButton>
+                                    </Grid>
+                                    <Grid size={{xs: 12, md: 6}} sx={{textAlign: 'center'}}>
+                                        <Box
+                                            sx={{
+                                                border: '1px solid black',
+                                                padding: '5px',
+                                                margin: '1px',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {character.achievements.length > 0 ? (
+                                                character.achievements.map((a: Achievement, index: number) => (
+                                                    <Typography key={a.id} variant="body2" color="text.secondary">
+                                                        {index + 1} - {a.content}
+                                                        {index < character.achievements.length - 1 && <br />}
+                                                    </Typography>
+                                                ))
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    -/-
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </Grid>
+
+                                </Grid>
                             </Grid>
                         ))
-
-
                     )}
                 </Paper>
             </Grid>

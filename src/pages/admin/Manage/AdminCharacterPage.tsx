@@ -16,10 +16,12 @@ import DoneIcon from "@mui/icons-material/Done";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AssetIcon from "../../../components/AssetIcon.tsx";
 import AssetPicker from "./components/AssetPicker.tsx";
+import {useError} from "../../../utils/setError.tsx";
 
 const client = generateClient<Schema>();
 
 export default function AdminCharacterPage() {
+    const setError = useError();
     const [selectedServerId, setSelectedServerId] = useState<string>('');
     const [characters, setCharacters] = useState<Character[]>([]);
     const [searchQuery, setSearchQuery] = useState<string | null>('');
@@ -30,7 +32,8 @@ export default function AdminCharacterPage() {
         coins: 0,
         experience: 0,
         level: 1,
-        serverId: ''
+        serverId: '',
+        achievements: []
     });
 
     useEffect(() => {
@@ -39,22 +42,69 @@ export default function AdminCharacterPage() {
 
     const fetchCharacters = async () => {
         setIsLoading(true);
-        const {data} = await client.models.Character.list({
-            filter: {serverId: {eq: selectedServerId}}
+
+        const {data, errors} = await client.models.Character.list({
+            filter: {serverId: {eq: selectedServerId}},
+            selectionSet: [
+                'id',
+                'nickname',
+                'coins',
+                'experience',
+                'level',
+                'characterAvatar',
+                'serverId',
+                'achievements.*']
         });
+        if (errors) {
+            setError('#005:01', 'Помилка при отриманні списку персонажів', errors.length >0?errors[0]?.message:'')
+            console.error('Error fetching characters:', errors);
+            return;
+        }
         setCharacters(data);
         setIsLoading(false);
     };
 
-    const handleEdit = (id:string) => {
+    const handleEdit = (id: string) => {
         setEditingId(id);
     };
 
-    const handleSave = async (character:Character) => {
-        setIsLoading(true);
-        await client.models.Character.update(character);
-        setEditingId(null);
-        fetchCharacters().then();
+    const handleSave = async (character: Character) => {
+
+        try {
+            setIsLoading(true);
+
+            const {data, errors} = await client.models.Character.update(character);
+            if (errors) {
+                setError('#005:02', 'Помилка при оновленні персонажа', errors.length >0?errors[0]?.message:'')
+                console.error('Error update character:', errors);
+                return;
+            }
+            for (const ach of character.achievements) {
+                if(ach.content === ''){
+                    await client.models.Achievement.delete({id: ach.id});
+                }else{
+                    const {errors} = await client.models.Achievement.update({
+                        id: ach.id,
+                        content: ach.content,
+                    });
+                    if (errors) {
+                        setError('#005:04', 'Помилка при оновленні досягнення', errors.length >0?errors[0]?.message:'')
+                        console.error('Error update achievement:', errors);
+                        return;
+                    }
+                }
+
+            }
+
+            console.log(data)
+            setEditingId(null);
+            fetchCharacters().then();
+        } catch (error) {
+            setError('#005:03', 'Помилка при оновленні персонажа', (error as Error).message)
+            console.error('Error update characters:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -127,7 +177,10 @@ export default function AdminCharacterPage() {
                                 fullWidth
                                 label="Нікнейм"
                                 value={newCharacter.nickname}
-                                onChange={e => setNewCharacter((prev:Character)  => ({...prev, nickname: e.target.value}))}
+                                onChange={e => setNewCharacter((prev: Character) => ({
+                                    ...prev,
+                                    nickname: e.target.value
+                                }))}
                             />
                         </Grid>
                         <Grid size={{xs: 12, md: 6}}>
@@ -153,7 +206,7 @@ export default function AdminCharacterPage() {
                         filteredCharacters.map((character) => (
                             <Grid container spacing={2} key={character.id}
                                   sx={{borderBottom: '1px solid #ddd', py: 1}}>
-                                <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'left'}}>
+                                <Grid size={{xs: 12, md: 1}} sx={{textAlign: 'left'}}>
                                     {editingId === character.id ? (
                                         <>
                                             <IconButton size={'large'} onClick={() => setEditingId(null)}>
@@ -172,7 +225,7 @@ export default function AdminCharacterPage() {
                                         </IconButton>
                                     )}
                                 </Grid>
-                                <Grid size={{xs: 12, md: 2}}>
+                                <Grid size={{xs: 12, md: 1}}>
                                     {editingId === character.id ? (
                                         <AssetPicker
                                             value={character.characterAvatar || ''}
@@ -181,7 +234,7 @@ export default function AdminCharacterPage() {
                                             ))}
                                         />
                                     ) : (
-                                      <AssetIcon assetId={character.characterAvatar}/>
+                                        <AssetIcon assetId={character.characterAvatar}/>
                                     )}
                                 </Grid>
                                 <Grid size={{xs: 12, md: 2}}>
@@ -206,7 +259,7 @@ export default function AdminCharacterPage() {
                                             onChange={e => setCharacters(prev => prev.map(c =>
                                                 c.id === character.id ? {
                                                     ...c,
-                                                    coins: Number(e.target.value)
+                                                    coins: e.target.value
                                                 } : c
                                             ))}
                                         />
@@ -223,7 +276,7 @@ export default function AdminCharacterPage() {
                                             onChange={e => setCharacters(prev => prev.map(c =>
                                                 c.id === character.id ? {
                                                     ...c,
-                                                    experience: Number(e.target.value)
+                                                    experience: e.target.value
                                                 } : c
                                             ))}
                                         />
@@ -240,12 +293,56 @@ export default function AdminCharacterPage() {
                                             onChange={e => setCharacters(prev => prev.map(c =>
                                                 c.id === character.id ? {
                                                     ...c,
-                                                    level: Number(e.target.value)
+                                                    level: e.target.value
                                                 } : c
                                             ))}
                                         />
                                     ) : (
                                         'Рівень: ' + character.level
+                                    )}
+                                </Grid>
+                                <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
+                                    {editingId === character.id ? (
+                                        <>
+                                            <Typography>Досягнення</Typography>
+                                            {character.achievements.length > 0 ? (
+                                                character.achievements.map((a: Achievement) => (
+                                                    <TextField
+                                                        key={a.id}
+                                                        fullWidth
+                                                        value={a.content}
+                                                        onChange={e => setCharacters(prev => prev.map(c =>
+                                                            c.id === character.id ? {
+                                                                ...c,
+                                                                achievements: c.achievements.map((ach:Achievement) =>
+                                                                    ach.id === a.id ? { ...ach, content: e.target.value } : ach
+                                                                )
+                                                            } : c
+                                                        ))}
+                                                    />
+                                                ))
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    -/-
+                                                </Typography>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Typography>Досягнення</Typography>
+                                            {character.achievements.length > 0 ? (
+                                                character.achievements.map((a: Achievement, index: number) => (
+                                                    <Typography key={a.id} variant="body2" color="text.secondary">
+                                                        {index + 1} - {a.content}
+                                                        {index < character.achievements.length - 1 && <br/>}
+                                                    </Typography>
+                                                ))
+                                            ) : (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    -/-
+                                                </Typography>
+                                            )}
+                                        </>
                                     )}
                                 </Grid>
 
