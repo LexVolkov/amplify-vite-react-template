@@ -1,25 +1,13 @@
 import Router from "./auth/routes.tsx";
-import { Container} from "@mui/material";
+import {Container} from "@mui/material";
 import Footer from "./layots/Footer";
 import Header from "./layots/Header.tsx";
-import {useSelector} from "react-redux";
-import {RootState} from "./redux/store.ts";
-import {useEffect} from "react";
-import {enqueueSnackbar} from "notistack";
+import Notification from "./utils/Notification.tsx";
 
 function App() {
-    const notification = useSelector((state: RootState) => state.notification);
-    useEffect(() => {
-        if(notification.notificationMessage){
-            const type = notification.notificationType;
-            const details = notification.notificationDetails !== '' && notification.notificationDetails !== null ? ' ('+ notification.notificationDetails +')': '';
-            const message = notification.notificationCode +': '+ notification.notificationMessage + details;
-            enqueueSnackbar(message, {variant: type})
-        }
-
-    }, [notification]);
     return (
         <main>
+            <Notification/>
             <Header/>
             <Container maxWidth={'xl'} style={{padding: '10px'}}>
                 <Router/>

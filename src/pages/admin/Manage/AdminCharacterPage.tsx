@@ -73,7 +73,7 @@ export default function AdminCharacterPage() {
         try {
             setIsLoading(true);
 
-            const {data, errors} = await client.models.Character.update(character);
+            const {errors} = await client.models.Character.update(character);
             if (errors) {
                 setError('#005:02', 'Помилка при оновленні персонажа', errors.length >0?errors[0]?.message:'')
                 console.error('Error update character:', errors);
@@ -95,8 +95,6 @@ export default function AdminCharacterPage() {
                 }
 
             }
-
-            console.log(data)
             setEditingId(null);
             fetchCharacters().then();
         } catch (error) {

@@ -65,8 +65,7 @@ function AdminSettingPage() {
         setEditedSetting(newSetting);
     };
 
-    const handleFieldChange = (id: string, field: keyof Setting, value: string) => {
-        console.log(id)
+    const handleFieldChange = (_id: string, field: keyof Setting, value: string) => {
         setEditedSetting({...editedSetting, [field]: value});
     };
 
@@ -284,11 +283,15 @@ function AdminSettingPage() {
                                                 <TextField
                                                     size="small"
                                                     value={editedSetting.description || ''}
+                                                    type="text"
                                                     onChange={e =>
                                                         handleFieldChange(editedSetting.id, 'description', e.target.value)
                                                     }
                                                     placeholder="Description"
                                                     fullWidth
+                                                    multiline
+                                                    rows={4} // Начальное количество строк
+
                                                 />
                                             </Grid>
                                             <Grid size={{xs: 12, md: 12}}>

@@ -202,7 +202,7 @@ export default function ControlPage() {
                             <Grid direction={{'xs': 'column', 'md': 'row'}} container spacing={2} key={character.id}
                                   sx={{borderBottom: '1px solid #ddd', py: 1}}>
                                 <Grid size={{xs: 12, md: 4}} direction={'row'} container spacing={2}>
-                                    <Grid size={{xs: 6, md: 2}}>
+                                    <Grid size={{xs: 6, md: 8}}>
                                         <Typography variant="h6" color={'textPrimary'} style={{fontWeight: 'bold'}}>
                                             {character.nickname}
                                         </Typography>
