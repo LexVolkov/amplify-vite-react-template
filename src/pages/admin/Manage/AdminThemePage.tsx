@@ -38,6 +38,7 @@ function AdminThemePage() {
         setColors(newColors);
     }, [theme.palette]);
 
+
     return (
         <div>
             <Grid container spacing={2} style={{ width: '100%', margin: '0px', padding:'25px' }}>
@@ -74,7 +75,6 @@ const ColorBox: React.FC<ColorBoxProps> = ({ color, name }) => {
         height: '50px',
         borderRadius: '5px',
     };
-
     return (
         <Grid size={{xs:12, sm:6, md:4,lg:3}}>
             <Paper elevation={3} style={style}>

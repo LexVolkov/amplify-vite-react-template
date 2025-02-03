@@ -2,14 +2,13 @@ import {useDispatch, useSelector} from 'react-redux';
 import {RootState, setUser} from '../redux/store.ts';
 import {fetchAuthSession, getCurrentUser} from "aws-amplify/auth";
 import {useEffect, ReactElement, useState} from "react";
-import {CircularProgress} from "@mui/material";
-import Box from "@mui/material/Box";
 import {generateClient} from "aws-amplify/api";
 import type {Schema} from "../../amplify/data/resource.ts";
 import NoAccessPage from "./NoAccessPage.tsx";
 import {InitSettings} from "../utils/InitialSettings.ts";
 import {initialState} from "../redux/states/user.ts";
 import {useError} from "../utils/setError.tsx";
+import Loader from "../components/Loader.tsx";
 
 interface ProtectedRouteProps {
     groups: string[];
@@ -53,7 +52,7 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
             }
             const {data, errors} = await client.models.UserProfile.list({});
             if (errors) {
-                setError('#001:01', 'Помилка при отриманні даних користувача', errors.length >0?errors[0]?.message:'')
+                setError('#001:01', 'Помилка при отриманні даних користувача', errors.length > 0 ? errors[0]?.message : '')
                 return;
             }
             if (data && data.length > 0) {
@@ -86,16 +85,7 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
 
     if ((!user.username && !user.groups.includes(guest)) || isLoading) {
         return (
-            <Box
-                sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 3,
-                    justifyContent: "center",
-                }}
-            >
-                <CircularProgress size="5rem"/>
-            </Box>
+            <Loader/>
         )
     }
 

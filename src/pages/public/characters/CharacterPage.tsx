@@ -8,6 +8,7 @@ import {ServerSelector} from "../../../components/ServerSelector.tsx";
 import {useSelector} from "react-redux";
 import {RootState} from "../../../redux/store.ts";
 import {useError} from "../../../utils/setError.tsx";
+import Loader from "../../../components/Loader.tsx";
 
 const client = generateClient<Schema>();
 
@@ -46,18 +47,19 @@ export default function CharacterPage() {
         }
     };
 
+
     return (
         <Box sx={{ p: 3 }}>
             <ServerSelector
                 value={selectedServerId}
                 onChange={(serverId) => setSelectedServerId(serverId)}
             />
-            {selectedServerId && (
+            {selectedServerId ? (
                 <CharacterList
                     characters={characters}
                     isLoading={isLoading}
                 />
-            )}
+            ):<Loader/>}
         </Box>
     );
 }

@@ -1,3 +1,4 @@
+
 type SettingsType = {
     [key: string]: any;
     CoinsExp: SettingRecord;

@@ -2,7 +2,6 @@
 import {useState, useEffect} from 'react';
 import {generateClient} from 'aws-amplify/data';
 import {
-    TextField,
     Paper, Skeleton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -18,6 +17,7 @@ import {GlobalSettings} from "../../utils/DefaultSettings.ts";
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import {useError} from "../../utils/setError.tsx";
 import Box from "@mui/material/Box";
+import {SearchBox} from "../../components/SearchBox.tsx";
 
 
 const client = generateClient<Schema>();
@@ -166,11 +166,6 @@ export default function ControlPage() {
 
     return (
         <Grid container spacing={2}>
-            <Grid size={12}>
-                <Typography variant="h4" gutterBottom>
-                    Керування
-                </Typography>
-            </Grid>
             <Grid size={{xs: 12, md: 12}}>
                 <Paper elevation={3} sx={{padding: 2}}>
                     <Grid container spacing={2}>
@@ -181,12 +176,7 @@ export default function ControlPage() {
                             />
                         </Grid>
                         <Grid size={{xs: 12, md: 6}}>
-                            <TextField
-                                fullWidth
-                                label="Пошук"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                            />
+                            <SearchBox onChange={setSearchQuery} />
                         </Grid>
                     </Grid>
                 </Paper>

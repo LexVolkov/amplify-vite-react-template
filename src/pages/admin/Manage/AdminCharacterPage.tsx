@@ -3,9 +3,9 @@ import {useState, useEffect} from 'react';
 import {generateClient} from 'aws-amplify/data';
 import {
     TextField,
-    Button,
     Paper,
     IconButton, Skeleton,
+    Box,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon} from '@mui/icons-material';
@@ -17,6 +17,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import AssetIcon from "../../../components/AssetIcon.tsx";
 import AssetPicker from "./components/AssetPicker.tsx";
 import {useError} from "../../../utils/setError.tsx";
+import {SearchBox} from "../../../components/SearchBox.tsx";
 
 const client = generateClient<Schema>();
 
@@ -112,15 +113,19 @@ export default function AdminCharacterPage() {
     };
 
     const handleAddCharacter = async () => {
-        if (newCharacter.nickname === '') {
-            alert('Введіть нікнейм');
+        const promptNewName = window.prompt(`Напиши нікнейм для додавання нового персонажа:`);
+        if (!promptNewName){
+            return;
+        }
+        const newName = promptNewName?.trim();
+        if(newName === ''){
             return;
         }
         if (!selectedServerId) {
             alert('Виберіть зміну');
             return;
         }
-
+        newCharacter.nickname = newName;
         setIsLoading(true);
         await client.models.Character.create({
             ...newCharacter,
@@ -147,7 +152,7 @@ export default function AdminCharacterPage() {
                     Character Management
                 </Typography>
             </Grid>
-            <Grid size={{xs: 12, md: 6}}>
+            <Grid size={{xs: 12, md:12}}>
                 <Paper elevation={3} sx={{padding: 2}}>
                     <Grid container spacing={2}>
                         <Grid size={{xs: 12, md: 6}}>
@@ -157,43 +162,25 @@ export default function AdminCharacterPage() {
                             />
                         </Grid>
                         <Grid size={{xs: 12, md: 6}}>
-                            <TextField
-                                fullWidth
-                                label="Пошук"
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                            />
+                            <Box display="flex" alignItems="center">
+                                <SearchBox onChange={setSearchQuery} />
+                                <IconButton
+                                    color="secondary"
+                                    aria-label="add character"
+                                    onClick={handleAddCharacter}
+                                    sx={{
+                                        padding: '10px',
+                                        margin: '10px',
+                                    }}
+                                >
+                                    <AddIcon />
+                                </IconButton>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Paper>
             </Grid>
-            <Grid size={{xs: 12, md: 6}}>
-                <Paper elevation={3} sx={{padding: 2}}>
-                    <Grid container spacing={2}>
-                        <Grid size={{xs: 12, md: 6}}>
-                            <TextField
-                                fullWidth
-                                label="Нікнейм"
-                                value={newCharacter.nickname}
-                                onChange={e => setNewCharacter((prev: Character) => ({
-                                    ...prev,
-                                    nickname: e.target.value
-                                }))}
-                            />
-                        </Grid>
-                        <Grid size={{xs: 12, md: 6}}>
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                startIcon={<AddIcon/>}
-                                onClick={handleAddCharacter}
-                            >
-                                Додати
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Paper>
-            </Grid>
+
             <Grid size={12}>
                 <Paper elevation={3} sx={{padding: 2}}>
                     {isLoading ? (
