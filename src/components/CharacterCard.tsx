@@ -4,6 +4,7 @@ import AssetIcon from './AssetIcon';
 import React from "react";
 import {GlobalSettings} from "../utils/DefaultSettings.ts";
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 
 interface CharacterCardProps {
     character: Character;
@@ -269,9 +270,15 @@ const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
                                     <Typography variant="body2" key={a.id} sx={{
                                         fontWeight: 'bold',
                                         color: theme.palette.primary.contrastText,
-                                        textShadow: `0 0 10px ${theme.palette.primary.main}`
+                                        textShadow: `0 0 10px ${theme.palette.primary.main}`,
+                                        textAlign: 'left',
                                     }}>
-                                        {index + 1} - {a.content}
+                                        <MilitaryTechIcon
+                                            style={{
+                                            verticalAlign: 'middle'
+                                        }}
+                                            fontSize={'small'}
+                                            color={'primary'}/>- {a.content}
                                         {index < character.achievements.length - 1 && <br/>}
                                     </Typography>
                                 ))}
