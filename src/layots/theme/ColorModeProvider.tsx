@@ -1,6 +1,6 @@
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { getDesignTokens } from './theme.tsx';
-import {createContext, ReactNode, useMemo, useState} from "react";
+import {createContext, ReactNode, useEffect, useMemo, useState} from "react";
 
 interface ColorModeProviderProps {
     children: ReactNode; // Тип для любых дочерних элементов
@@ -9,7 +9,14 @@ interface ColorModeProviderProps {
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
 function ColorModeProvider({ children }: ColorModeProviderProps) {
-    const [mode, setMode] = useState<"light" | "dark">("dark");
+    const [mode, setMode] = useState<"light" | "dark">(() => {
+        const savedMode = localStorage.getItem('themeMode');
+        return savedMode ? savedMode as "light" | "dark" : "dark";
+    });
+
+    useEffect(() => {
+        localStorage.setItem('themeMode', mode);
+    }, [mode]);
 
     const colorMode = useMemo(
         () => ({
