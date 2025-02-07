@@ -1,52 +1,36 @@
 // CharacterPage.tsx
 import { useEffect, useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
 import {Box} from '@mui/material';
 import CharacterList from "../../../components/CharacterList.tsx";
-import type {Schema} from "../../../../amplify/data/resource.ts";
 import {ServerSelector} from "../../../components/ServerSelector.tsx";
 import {useSelector} from "react-redux";
 import {RootState} from "../../../redux/store.ts";
-import {useError} from "../../../utils/setError.tsx";
 import Loader from "../../../components/Loader.tsx";
-
-const client = generateClient<Schema>();
+import useRequest from "../../../api/useRequest.ts";
+import {m_listCharacters} from "../../../api/models/CharacterModels.ts";
 
 export default function CharacterPage() {
     const user = useSelector((state: RootState) => state.user);
     const [selectedServerId, setSelectedServerId] = useState('');
     const [characters, setCharacters] = useState<Character[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const setError = useError();
+
+    const charsData = useRequest({
+        model: m_listCharacters,
+        errorCode: '#002:01'
+    });
 
     useEffect(() => {
-        if (selectedServerId) fetchCharacters().then();
+        if (selectedServerId) {
+            setCharacters([]);
+            charsData.makeRequest({ serverId: selectedServerId, authMode: user.authMode }).then();
+        }
     }, [selectedServerId]);
 
-    const fetchCharacters = async () => {
-        try {
-            setIsLoading(true);
-
-
-            const {data: characterData, errors} = await client.models.Server.get(
-                {id: selectedServerId},
-                {selectionSet: ['characters.*', 'characters.achievements.*'], authMode:user.authMode}
-            );
-            if (errors) {
-                setError('#002:01', 'Помилка при отриманні списку персонажів', errors.length >0?errors[0]?.message:'')
-                console.error('Error fetching Chars:', errors);
-                return;
-            }
-
-            setCharacters(characterData?.characters || []);
-        } catch (error) {
-            setError('#002:02', 'Помилка при отриманні даних персонажів', (error as Error).message)
-            console.error('Error fetching Chars:', error);
-        } finally {
-            setIsLoading(false);
+    useEffect(() => {
+        if (charsData.result) {
+            setCharacters(charsData.result);
         }
-    };
-
+    }, [charsData.result]);
 
     return (
         <Box sx={{ p: 3 }}>
@@ -57,7 +41,7 @@ export default function CharacterPage() {
             {selectedServerId ? (
                 <CharacterList
                     characters={characters}
-                    isLoading={isLoading}
+                    isLoading={charsData.isLoading}
                 />
             ):<Loader/>}
         </Box>

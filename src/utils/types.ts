@@ -1,3 +1,4 @@
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SettingValueType =
     "string" |
@@ -80,5 +81,9 @@ type UserProfile = Schema["UserProfile"]["type"];
 // @ts-expect-error
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Achievement = Schema["Achievement"]["type"];
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Transaction = Schema["Transaction"]["type"];
 
 

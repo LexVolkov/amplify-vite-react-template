@@ -72,7 +72,7 @@ function AdminLogPage() {
             setIsLoading(false);
         }
     };
-
+const sortedLogs = logs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return (
         <div>
             <Typography variant="h4" sx={{marginBottom: 2}}>
@@ -102,7 +102,7 @@ function AdminLogPage() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {logs.map((log) => (
+                            {sortedLogs.map((log) => (
                                 <TableRow key={log.id}>
                                     <TableCell>{log.characterName || 'N/A'}</TableCell>
                                     <TableCell>{log.from || 'N/A'}</TableCell>
