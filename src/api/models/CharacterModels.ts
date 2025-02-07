@@ -20,7 +20,8 @@ export const m_listCharacters = async (requestData:any): Promise<Character[]> =>
     }
     const {data, errors} = await client.models.Server.get(
         {id: serverId},
-        {selectionSet: ['characters.*', 'characters.achievements.*'], authMode:authMode || "userPool"}
+        {selectionSet: ['characters.*', 'characters.achievements.*'],
+            authMode:authMode || "userPool"}
     );
     if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
     if(data){
@@ -29,7 +30,7 @@ export const m_listCharacters = async (requestData:any): Promise<Character[]> =>
         return [];
     }
 }
-export const m_updateCharacters = async (requestData:any): Promise<Character[]> => {
+export const m_updateCharacter = async (requestData:any): Promise<Character[]> => {
     const {character} = requestData;
     if(!character){
         throw new Error('Не має даних персонажа');
@@ -38,6 +39,34 @@ export const m_updateCharacters = async (requestData:any): Promise<Character[]> 
         character,{
             selectionSet: defaultCharacterSelectionSet
         });
+    if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
+    return data as Character;
+}
+export const m_createCharacter = async (requestData:any): Promise<Character[]> => {
+    const {character} = requestData;
+    if(!character){
+        throw new Error('Не має даних персонажа');
+    }
+    const newChar:Character = character;
+    const {data, errors} = await client.models.Character.create(
+        newChar
+    ,{
+        selectionSet: defaultCharacterSelectionSet
+    });
+
+    if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
+    return data as Character;
+}
+export const m_deleteCharacter = async (requestData:any): Promise<Character[]> => {
+    const {id} = requestData;
+    if(!id){
+        throw new Error('Не має даних персонажа');
+    }
+
+    const {data, errors} = await client.models.Character.delete({id},{
+        selectionSet: defaultCharacterSelectionSet
+    });
+
     if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
     return data as Character;
 }

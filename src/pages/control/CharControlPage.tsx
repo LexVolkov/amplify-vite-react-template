@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store.ts';
 import useRequest from '../../api/useRequest.ts';
-import { m_listCharacters, m_updateCharacters } from '../../api/models/CharacterModels.ts';
+import { m_listCharacters, m_updateCharacter } from '../../api/models/CharacterModels.ts';
 import { m_createTransaction } from '../../api/models/TransactionModels.ts';
 import { m_createAchievement } from '../../api/models/AchievementModels.ts';
 import CharControlPageUI from './CharControlPageUI.tsx';
@@ -26,7 +26,7 @@ export default function CharControlPage({selectedServerId, searchQuery}:CharCont
     const setError = useError();
 
     const charsData = useRequest({ model: m_listCharacters, errorCode: '#004:01' });
-    const charsUpdate = useRequest({ model: m_updateCharacters, errorCode: '#004:02' });
+    const charsUpdate = useRequest({ model: m_updateCharacter, errorCode: '#004:02' });
     const addTransaction = useRequest({ model: m_createTransaction, errorCode: '#004:03' });
     const addAchievement = useRequest({ model: m_createAchievement, errorCode: '#004:04' });
 
