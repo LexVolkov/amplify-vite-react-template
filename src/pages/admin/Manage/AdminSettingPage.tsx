@@ -20,6 +20,7 @@ import AssetIcon from "../../../components/AssetIcon.tsx";
 import CloseIcon from '@mui/icons-material/Close';
 import LoadingButton from "@mui/lab/LoadingButton";
 import {GlobalSettings} from "../../../utils/DefaultSettings.ts";
+import {telegramBot} from "../../../../amplify/functions/telegram-bot/resource.ts";
 
 const client = generateClient<Schema>();
 
@@ -39,6 +40,17 @@ function AdminSettingPage() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLoadingSave, setIsLoadingSave] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    /*useEffect(() => {
+        const query = async () => {
+            const res = await client.queries.telegramBot({
+                name: "Masha",
+            })
+            console.log(res)
+        }
+
+        query().then()
+    }, []);*/
 
     useEffect(() => {
         const fetchSettings = async () => {

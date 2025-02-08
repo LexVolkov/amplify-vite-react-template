@@ -1,5 +1,6 @@
 import {type ClientSchema, a, defineData} from "@aws-amplify/backend";
 import {postConfirmation} from "../auth/post-confirmation/resource";
+import {telegramBot} from "../functions/telegram-bot/resource";
 
 const accessLevel = {
     guest: 'GUEST',
@@ -162,9 +163,21 @@ const schema = a.schema({
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
         ]),
+    telegramBot: a
+        .query()
+        .arguments({
+            name: a.string(),
+        })
+        .returns(a.string())
+        .handler(a.handler.function(telegramBot))
+        .authorization((allow) => [
+            allow.authenticated(),
+        ]),
+
 
 }).authorization((allow) => [
-    allow.resource(postConfirmation)
+    allow.resource(postConfirmation),
+    allow.resource(telegramBot)
 ]);
 
 export type Schema = ClientSchema<typeof schema>;

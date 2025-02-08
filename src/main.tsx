@@ -12,9 +12,16 @@ import {BrowserRouter} from "react-router-dom";
 import {closeSnackbar, SnackbarProvider} from "notistack";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import { parseAmplifyConfig } from "aws-amplify/utils";
 
-
-Amplify.configure(outputs);
+const amplifyConfig = parseAmplifyConfig(outputs);
+Amplify.configure({
+    ...amplifyConfig,
+    API: {
+        ...amplifyConfig.API,
+        REST: outputs.custom.API,
+    },
+});
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <Provider store={store}>

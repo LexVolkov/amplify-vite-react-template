@@ -39,6 +39,7 @@ function AdminServerPage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
 
+
     useEffect(() => {
         const subscription = client.models.Server.observeQuery().subscribe({
             next: (data) => {
