@@ -5,13 +5,15 @@ import React from "react";
 import {GlobalSettings} from "../utils/DefaultSettings.ts";
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface CharacterCardProps {
     character: Character;
     place?: number;
+    isServerName?: boolean;
 }
 
-const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
+const CharacterCard: React.FC<CharacterCardProps> = ({character, place, isServerName}) => {
     const theme = useTheme();
 
     // Рассчитываем уровень и прогресс
@@ -80,6 +82,18 @@ const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
                     </Box>
                 )}
 
+                {/* ServerName */}
+                {isServerName &&
+                    <Typography variant="h5" sx={{
+                        mt: 2,
+                        textAlign: 'center',
+                        WebkitBackgroundClip: 'text',
+                        fontWeight: 'bold',
+                        textShadow: `0px 0px 55px ${theme.palette.primary.main}`
+                    }}>
+                       <CalendarMonthIcon /> {character.server.name}
+                    </Typography>
+                }
                 {/* Character Avatar */}
                 <Box sx={{
                     display: 'flex',
@@ -230,60 +244,60 @@ const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
                     {/* achievements */}
                     {character.achievements.length > 0 ? (
                         <>
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            p: 1,
-                            borderRadius: '8px',
-                            transition: 'background 0.3s',
-                            '&:hover': {
-                                background: theme.palette.action.hover
-                            }
-                        }}>
-                            <EmojiEventsIcon sx={{color: theme.palette.secondary.main}}/>
-                            <Typography variant="body2" sx={{color: theme.palette.text.primary}}>
-                                Нагороди:
-                            </Typography>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                p: 1,
+                                borderRadius: '8px',
+                                transition: 'background 0.3s',
+                                '&:hover': {
+                                    background: theme.palette.action.hover
+                                }
+                            }}>
+                                <EmojiEventsIcon sx={{color: theme.palette.secondary.main}}/>
+                                <Typography variant="body2" sx={{color: theme.palette.text.primary}}>
+                                    Нагороди:
+                                </Typography>
 
-                        </Box>
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            p: 1,
-                            borderRadius: '8px',
-                            transition: 'background 0.3s',
-                            '&:hover': {
-                                background: theme.palette.action.hover
-                            }
-                        }}>
-                            <Box
-                                sx={{
-                                    border: '1px solid black',
-                                    padding: '5px',
-                                    margin: '1px',
-                                    textAlign: 'center',
-                                }}
-                            >
-                                {character.achievements.map((a: Achievement, index: number) => (
-                                    <Typography variant="body2" key={a.id} sx={{
-                                        fontWeight: 'bold',
-                                        color: theme.palette.primary.contrastText,
-                                        textShadow: `0 0 10px ${theme.palette.primary.main}`,
-                                        textAlign: 'left',
-                                    }}>
-                                        <MilitaryTechIcon
-                                            style={{
-                                            verticalAlign: 'middle'
-                                        }}
-                                            fontSize={'small'}
-                                            color={'primary'}/>- {a.content}
-                                        {index < character.achievements.length - 1 && <br/>}
-                                    </Typography>
-                                ))}
                             </Box>
-                        </Box>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                p: 1,
+                                borderRadius: '8px',
+                                transition: 'background 0.3s',
+                                '&:hover': {
+                                    background: theme.palette.action.hover
+                                }
+                            }}>
+                                <Box
+                                    sx={{
+                                        border: '1px solid black',
+                                        padding: '5px',
+                                        margin: '1px',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    {character.achievements.map((a: Achievement, index: number) => (
+                                        <Typography variant="body2" key={a.id} sx={{
+                                            fontWeight: 'bold',
+                                            color: theme.palette.primary.contrastText,
+                                            textShadow: `0 0 10px ${theme.palette.primary.main}`,
+                                            textAlign: 'left',
+                                        }}>
+                                            <MilitaryTechIcon
+                                                style={{
+                                                    verticalAlign: 'middle'
+                                                }}
+                                                fontSize={'small'}
+                                                color={'primary'}/>- {a.content}
+                                            {index < character.achievements.length - 1 && <br/>}
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            </Box>
                         </>
                     ) : null}
                 </Box>

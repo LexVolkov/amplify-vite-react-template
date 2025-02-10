@@ -13,22 +13,27 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import AssetIcon from "../../../components/AssetIcon.tsx";
 import AssetPicker from "./components/AssetPicker.tsx";
 import {FC} from "react";
+import {UserSelector} from "../../../components/UserSelector.tsx";
+import EscalatorWarningIcon from '@mui/icons-material/EscalatorWarning';
 
 interface AdminCharacterPageUIProps {
+    users: UserProfile[];
     characters: Character[];
     onCharEdit: (characterId: string) => void;
     onCharSave: (character: Character) => void;
     onCharDelete: (characterId: string) => void;
     onCancel: () => void;
-    onSetChar: (characterId: string, paramName: string, value: string) => void;
+    onSetChar: (characterId: string, paramName: string, value: string | null) => void;
     onUpdateAchievement: (characterId: string, achievementId: string, value: string) => void;
     onAddAchievement: (characterId: string) => void;
     editingId: string | null;
     isLoading: boolean;
     isLoadingEdit: boolean;
+    isLoadingUsers: boolean;
 }
 
 export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
+                                                                        users,
                                                                         characters,
                                                                         onCharEdit,
                                                                         onCharSave,
@@ -39,7 +44,8 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                                                         editingId,
                                                                         isLoading,
                                                                         isLoadingEdit,
-                                                                        onUpdateAchievement
+                                                                        onUpdateAchievement,
+                                                                        isLoadingUsers
                                                                     }) => {
     return (
         <Paper elevation={3} sx={{padding: 2}}>
@@ -117,7 +123,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                 'Досвід: ' + character.experience
                             )}
                         </Grid>
-                        <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
+                        <Grid size={{xs: 12, md: 1}} sx={{textAlign: 'right'}}>
                             {editingId === character.id ? (
                                 <TextField
                                     fullWidth
@@ -139,7 +145,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                                 key={a.id}
                                                 fullWidth
                                                 value={a.content}
-                                                onChange={e => onUpdateAchievement(character.id,a.id, e.target.value)}
+                                                onChange={e => onUpdateAchievement(character.id, a.id, e.target.value)}
                                             />
                                         ))
                                     ) : (
@@ -174,6 +180,32 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                         </Typography>
                                     )}
                                 </>
+                            )}
+                        </Grid>
+                        <Grid size={{xs: 12, md: 1}} sx={{textAlign: 'right'}}>
+                            {editingId === character.id ? (
+                                <UserSelector
+                                    isLoading={isLoadingUsers}
+                                    inputUsers={users}
+                                    value={character.userProfileId || ''}
+                                    onChange={(profileId: string, userId: string) => {
+                                        if(userId === null || userId === undefined || userId === ''){
+                                            onSetChar(character.id, 'userProfileId', null);
+                                            onSetChar(character.id, 'characterOwner', null);
+                                        }else{
+                                            onSetChar(character.id, 'userProfileId', profileId);
+                                            onSetChar(character.id, 'characterOwner', userId+'::'+userId);
+                                        }
+
+                                    }}/>
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                    <EscalatorWarningIcon/> {users.find(
+                                        u => {
+                                            return u.id === character.userProfileId
+                                        })?.
+                                        nickname||'Нічийний'}
+                                </Typography>
                             )}
                         </Grid>
                     </Grid>

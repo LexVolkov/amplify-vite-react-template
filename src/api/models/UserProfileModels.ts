@@ -35,6 +35,7 @@ export const m_listUsersProfileData = async (): Promise<Character[]> => {
         return [];
     }
 }
+//TODO разделить эти запросы
 export const m_listUsersData = async (): Promise<UserProfile> => {
 
     const {data, errors} = await client.models.UserProfile.list({});

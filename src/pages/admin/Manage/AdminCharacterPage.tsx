@@ -20,6 +20,7 @@ import {m_createAchievement, m_deleteAchievement, m_updateAchievement} from "../
 import {useSelector} from "react-redux";
 import {RootState} from "../../../redux/store.ts";
 import {AdminCharacterPageUI} from "./AdminCharacterPageUI.tsx";
+import {m_listUsersData} from "../../../api/models/UserProfileModels.ts";
 
 export default function AdminCharacterPage() {
     const user = useSelector((state: RootState) => state.user);
@@ -28,7 +29,7 @@ export default function AdminCharacterPage() {
     const [characters, setCharacters] = useState<Character[]>([]);
     const [searchQuery, setSearchQuery] = useState<string | null>('');
     const [editingId, setEditingId] = useState<string | null>(null);
-
+    const [users, setUsers] = useState<Server[]>([]);
 
     const charsData = useRequest({model: m_listCharacters, errorCode: '#005:01'});
     const charsUpdate = useRequest({model: m_updateCharacter, errorCode: '#005:02'});
@@ -37,6 +38,21 @@ export default function AdminCharacterPage() {
     const deleteAchievement = useRequest({model: m_deleteAchievement, errorCode: '#005:06'});
     const updateAchievement = useRequest({model: m_updateAchievement, errorCode: '#005:07'});
     const addAchievement = useRequest({model: m_createAchievement, errorCode: '#005:08'});
+    const userData = useRequest({
+        model: m_listUsersData,
+        errorCode: '#005:01'
+    });
+
+    useEffect(() => {
+        userData.makeRequest({}).then()
+
+    }, []);
+
+    useEffect(() => {
+        if(userData.result){
+            setUsers(userData.result.data);
+        }
+    }, [userData.result]);
 
     useEffect(() => {
         if (selectedServerId) {
@@ -61,7 +77,7 @@ export default function AdminCharacterPage() {
     const handleSetCharacterPar = (
         characterId: string,
         paramName: string,
-        value: string) => {
+        value: string | null) => {
         if(!characterId || !paramName){
             return;
         }
@@ -99,7 +115,7 @@ export default function AdminCharacterPage() {
                 const currentUpdatedCharacter = characters.find((char) => char.id === charsUpdateResult.id)
                 const newUpdatedCharacter = {...currentUpdatedCharacter}
                 setCharacters((prev: Character[]) =>
-                    prev.map((char: Character) => (char.id === charsUpdateResult.id ? charsUpdateResult : char))
+                    prev.map((char: Character) => (char.id === charsUpdateResult.id ? newUpdatedCharacter : char))
                 );
                 for (const ach of newUpdatedCharacter.achievements) {
                     const currentAchievement = charsUpdateResult.achievements.find((a: Achievement) => a.id === ach.id)
@@ -266,6 +282,7 @@ export default function AdminCharacterPage() {
 
             <Grid size={12}>
                 <AdminCharacterPageUI
+                    users={users}
                     characters={filteredCharacters}
                     onCharEdit={handleEdit}
                     onCharSave={handleSave}
@@ -281,7 +298,8 @@ export default function AdminCharacterPage() {
                         charsDelete.isLoading ||
                         deleteAchievement.isLoading ||
                         updateAchievement.isLoading ||
-                        addAchievement.isLoading}/>
+                        addAchievement.isLoading}
+                isLoadingUsers={userData.isLoading}/>
             </Grid>
         </Grid>
     );

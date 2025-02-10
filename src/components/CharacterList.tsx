@@ -12,10 +12,11 @@ const SORT_TYPES = {
 
 interface CharacterListProps {
     characters: Character[];
-    isLoading: boolean;
+    isLoading?: boolean;
+    isServerName?: boolean;
 }
 
-const CharacterList = ({ characters, isLoading }: CharacterListProps) => {
+const CharacterList = ({ characters, isLoading, isServerName }: CharacterListProps) => {
     const [sortType, setSortType] = useState(SORT_TYPES.EXPERIENCE);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -85,6 +86,7 @@ const CharacterList = ({ characters, isLoading }: CharacterListProps) => {
                             key={character.id}
                             character={character}
                             place={sortType === SORT_TYPES.NAME? undefined : i + 1}
+                            isServerName={isServerName}
                         />
                     ))
                 )}

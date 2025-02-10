@@ -14,7 +14,8 @@ const accessLevel = {
 const schema = a.schema({
     Character: a
         .model({
-            owner: a.id(),
+            characterOwner: a.string(),
+            userProfileId: a.id(),
             nickname: a.string().required(),
             coins: a.integer(),
             experience: a.integer(),
@@ -22,6 +23,7 @@ const schema = a.schema({
             characterAvatar: a.string(),
             serverId: a.id(),
             server: a.belongsTo('Server', 'serverId'),
+            userProfile: a.belongsTo('UserProfile', 'userProfileId'),
             transactions: a.hasMany('Transaction', 'characterId'),
             achievements: a.hasMany('Achievement', 'characterId'),
         })
@@ -29,11 +31,29 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder]).to(["read", "update"]),
             allow.groups([accessLevel.member]).to(["read"]),
-            allow.owner().to(["read", "update"]),
+            allow.ownerDefinedIn("characterOwner").to(["read", "update"]),
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
         ]),
-
+    UserProfile: a
+        .model({
+            email: a.string(),
+            profileOwner: a.string(),
+            fullName: a.string(),
+            nickname: a.string(),
+            avatar: a.string(),
+            gender: a.enum(['MALE', 'FEMALE', 'OTHER']),
+            telegramId: a.integer(),
+            telegramUsername: a.string(),
+            banned: a.boolean().default(false),
+            bannedReason: a.string(),
+            bannedTime: a.string(),
+            characters: a.hasMany('Character', 'userProfileId'),
+        })
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "update", "delete"]),
+            allow.ownerDefinedIn("profileOwner"),
+        ]),
     Achievement: a
         .model({
             from: a.id(),
@@ -75,24 +95,7 @@ const schema = a.schema({
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.groups([accessLevel.moder]).to(["create"]),
         ]),
-    UserProfile: a
-        .model({
-            email: a.string(),
-            profileOwner: a.string(),
-            fullName: a.string(),
-            nickname: a.string(),
-            avatar: a.string(),
-            gender: a.enum(['MALE', 'FEMALE', 'OTHER']),
-            telegramId: a.integer(),
-            telegramUsername: a.string(),
-            banned: a.boolean().default(false),
-            bannedReason: a.string(),
-            bannedTime: a.string(),
-        })
-        .authorization((allow) => [
-            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
-            allow.ownerDefinedIn("profileOwner"),
-        ]),
+
 
     Settings: a
         .model({

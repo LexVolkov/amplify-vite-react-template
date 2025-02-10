@@ -63,7 +63,7 @@ export const handler: Handler = async (event) => {
         })
         const response = await client.send(command)
         if (!response.Users || response.Users.length === 0) {
-            return {error: 'No users found'}
+            return {error: 'No userProfiles found'}
         }
         const userBans = response.Users.map(
             user => {
@@ -75,7 +75,7 @@ export const handler: Handler = async (event) => {
         if(userBans){
             return userBans
         }else{
-            return {error: 'No users found'}
+            return {error: 'No userProfiles found'}
         }
     }
 }

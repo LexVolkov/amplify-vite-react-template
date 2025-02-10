@@ -5,6 +5,7 @@ import {Box, Button, Tab, Tabs, Typography, Paper, Avatar, Container} from '@mui
 import LogoutIcon from '@mui/icons-material/Logout';
 import ProfileDetailsPage from "./widgets/ProfileDetailsPage.tsx";
 import AssetIcon from "../../components/AssetIcon.tsx";
+import ProfileCharactersPage from "./widgets/ProfileCharactersPage.tsx";
 
 
 function ProfilePage() {
@@ -54,7 +55,7 @@ function ProfilePage() {
                         <ProfileDetailsPage/>
                     )}
                     {value === 1 && (
-                        <Typography variant="body1">В розробці.</Typography>
+                        <ProfileCharactersPage/>
                     )}
                     {value === 2 && (
                         <Typography variant="body1">В розробці.</Typography>
