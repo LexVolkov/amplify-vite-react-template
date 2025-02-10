@@ -93,7 +93,7 @@ export default function CharControlPageUI({
                                             variant={'outlined'}
                                             color={'primary'}
                                         >
-                                            +досягнення
+                                            +Нагорода
                                         </LoadingButton>
                                     </Grid>
                                     <Grid size={{xs: 12, md: 6}} sx={{textAlign: 'center'}}>

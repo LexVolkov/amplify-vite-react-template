@@ -132,7 +132,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                         <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
                             {editingId === character.id ? (
                                 <>
-                                    <Typography>Досягнення</Typography>
+                                    <Typography>Нагороди</Typography>
                                     {character.achievements.length > 0 ? (
                                         character.achievements.map((a: Achievement) => (
                                             <TextField
@@ -155,12 +155,12 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                         color={'inherit'}
                                         size={'small'}
                                     >
-                                        +досягнення
+                                        +Нагорода
                                     </LoadingButton>
                                 </>
                             ) : (
                                 <>
-                                    <Typography>Досягнення</Typography>
+                                    <Typography>Нагороди</Typography>
                                     {character.achievements.length > 0 ? (
                                         character.achievements.map((a: Achievement, index: number) => (
                                             <Typography key={a.id} variant="body2" color="text.secondary">
@@ -172,13 +172,9 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                         <Typography variant="body2" color="text.secondary">
                                             -/-
                                         </Typography>
-
                                     )}
-
                                 </>
                             )}
-
-
                         </Grid>
                     </Grid>
                 ))

@@ -243,7 +243,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({character, place}) => {
                         }}>
                             <EmojiEventsIcon sx={{color: theme.palette.secondary.main}}/>
                             <Typography variant="body2" sx={{color: theme.palette.text.primary}}>
-                                Досягнення:
+                                Нагороди:
                             </Typography>
 
                         </Box>
