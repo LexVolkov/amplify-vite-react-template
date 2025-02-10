@@ -4,7 +4,7 @@ import {Paper} from "@mui/material";
 import {ServerSelector} from "../../components/ServerSelector.tsx";
 import {SearchBox} from "../../components/SearchBox.tsx";
 import {useState} from "react";
-import {TabSelector} from "./components/TabSelector.tsx";
+import {TabSelector} from "../../components/TabSelector.tsx";
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 const tabs = [
     {index: 0,label: 'Герої', icon: <PersonAddAlt1Icon/>},

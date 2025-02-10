@@ -13,13 +13,10 @@ import {
 import {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState, setUser} from "../../../redux/store.ts";
-import {generateClient} from "aws-amplify/api";
-import type {Schema} from "../../../../amplify/data/resource.ts";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Grid from '@mui/material/Grid2';
-import AssetIcon from "../../../components/AssetIcon.tsx";
-
-const client = generateClient<Schema>();
+import useRequest from "../../../api/useRequest.ts";
+import {m_getUserProfileData, m_updateUsersProfileData} from "../../../api/models/UserProfileModels.ts";
 
 function ProfileDetailsPage() {
     const user = useSelector((state: RootState) => state.user);
@@ -27,35 +24,25 @@ function ProfileDetailsPage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [profileEdited, setProfileEdited] = useState<UserProfile>(null);
     const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                setIsLoading(true);
-                const {data, errors} = await client.models.UserProfile.list({});
-                if (errors) {
-                    setError('Помилка завантаження данних профелю.')
-                    console.error(errors);
-                    return;
-                }
-                if (data.length > 0) {
-                    setProfile(data[0]);
-                } else {
-                    setError('Помилка завантаження данних профелю.')
-                }
-            } catch (error) {
-                console.error('Error fetching settings:', error);
-                setError('Помилка завантаження данних профелю.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProfile().then();
-    }, []);
+    const usersData = useRequest({model: m_getUserProfileData, errorCode: '#006:01'});
+    const usersDataUpdate = useRequest({model: m_updateUsersProfileData, errorCode: '#006:02'});
 
+
+
+    useEffect(() => {
+        if(user && user.userId){
+            usersData.makeRequest({userId: user.userId}).then()
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if(usersData.result){
+            setProfile(usersData.result);
+        }
+    }, [usersData.result]);
     const handleEdit = () => {
         setProfileEdited(profile);
         setIsEditing(true);
@@ -63,19 +50,20 @@ function ProfileDetailsPage() {
 
     const handleSave = async () => {
         if (profileEdited === null) return;
-        try {
-            setIsLoading(true);
-            const {errors} = await client.models.UserProfile.update({
-                id: profileEdited.id,
-                email: profileEdited.email,
-                fullName: profileEdited.fullName,
-                nickname: profileEdited.nickname,
-                avatar: profileEdited.avatar,
-                gender: profileEdited.gender,
-            });
-            if (errors) {
-                setError('Помилка збереження данних профелю.');
-            }
+
+        const updateProfile = {
+            id: profileEdited.id,
+            fullName: profileEdited.fullName,
+            nickname: profileEdited.nickname,
+            avatar: profileEdited.avatar,
+            gender: profileEdited.gender,
+        }
+
+        usersDataUpdate.makeRequest({user:updateProfile}).then()
+
+    };
+    useEffect(() => {
+        if(usersDataUpdate.result){
             setProfile(profileEdited);
             dispatch(setUser({
                 ...user,
@@ -86,14 +74,8 @@ function ProfileDetailsPage() {
                 gender: profileEdited.gender
             }));
             setIsEditing(false);
-        } catch (error) {
-            setError('Помилка збереження данних профелю.');
-            console.error(error);
-        } finally {
-            setIsLoading(false);
         }
-    };
-
+    }, [usersDataUpdate.result]);
     const handleCancel = () => {
         setIsEditing(false);
         setProfileEdited(null);
@@ -107,19 +89,6 @@ function ProfileDetailsPage() {
             )}
             {isEditing ? (
                 <>
-                    <TextField
-                        label="@mail"
-                        value={profileEdited.email}
-                        onChange={(e) =>
-                            setProfileEdited((prev: UserProfile) => ({
-                                ...prev,
-                                email: e.target.value
-                            }))
-                        }
-                        fullWidth
-                        margin="normal"
-                        disabled={true}
-                    />
                     <TextField
                         label="Повне ім'я"
                         value={profileEdited.fullName}
@@ -147,7 +116,7 @@ function ProfileDetailsPage() {
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Стать</InputLabel>
                         <Select
-                            value={profileEdited.gender}
+                            value={profileEdited.gender || ''}
                             onChange={(e) =>
                                 setProfileEdited((prev: UserProfile) => ({
                                     ...prev,
@@ -161,23 +130,10 @@ function ProfileDetailsPage() {
                             <MenuItem value="OTHER">Інше</MenuItem>
                         </Select>
                     </FormControl>
-                    <TextField
-                        label="Аватар"
-                        value={profileEdited.avatar}
-                        onChange={(e) =>
-                            setProfileEdited((prev: UserProfile) => ({
-                                ...prev,
-                                avatar: e.target.value
-                            }))
-                        }
-                        fullWidth
-                        margin="normal"
-                        disabled={true}
-                    />
 
                     <Box sx={{mt: 2}}>
                         <LoadingButton
-                            loading={isLoading}
+                            loading={usersDataUpdate.isLoading}
                             variant="contained"
                             onClick={handleSave}
                             sx={{mr: 2}}>
@@ -193,38 +149,24 @@ function ProfileDetailsPage() {
                     <Grid container direction={'row'} spacing={2}>
                         <Grid size={{xs: 12, md: 12}}>
                             <Typography variant="body1" style={{display: 'inline-block'}}>
-                                @mail: {isLoading
-                                ? TextSkeleton()
-                                : profile?.email || ''}
-                            </Typography>
-                        </Grid>
-                        <Grid size={{xs: 12, md: 12}}>
-                            <Typography variant="body1" style={{display: 'inline-block'}}>
-                                Повне ім'я: {isLoading
+                                Повне ім'я: {usersData.isLoading || usersDataUpdate.isLoading
                                 ? TextSkeleton()
                                 : profile?.fullName || ''}
                             </Typography>
                         </Grid>
                         <Grid size={{xs: 12, md: 12}}>
                             <Typography variant="body1" style={{display: 'inline-block'}}>
-                                Нікнейм: {isLoading
+                                Нікнейм: {usersData.isLoading || usersDataUpdate.isLoading
                                 ? TextSkeleton()
                                 : profile?.nickname || ''}
                             </Typography>
                         </Grid>
                         <Grid size={{xs: 12, md: 12}}>
                             <Typography variant="body1" style={{display: 'inline-block'}}>
-                                Стать: {isLoading
+                                Стать: {usersData.isLoading || usersDataUpdate.isLoading
                                 ? TextSkeleton()
                                 : getGender(profile?.gender || '')}
                             </Typography>
-                        </Grid>
-                        <Grid size={{xs: 12, md: 12}}>
-                            <Typography variant="body1" style={{display: 'inline-block'}}>
-                                Аватар: {isLoading
-                                ? TextSkeleton()
-                                :  <AssetIcon assetId={profile?.avatar} size={30}/>}
-                            </Typography> 
                         </Grid>
                         <Grid size={{xs: 12, md: 12}}>
                             <Button variant="contained" onClick={handleEdit} sx={{mt: 2}}>

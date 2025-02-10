@@ -15,14 +15,20 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ImageIcon from '@mui/icons-material/Image';
 import AdminAssetPage from "./Manage/AdminAssetPage.tsx";
 import AdminThemePage from "./Manage/AdminThemePage.tsx";
+import AdminTgPage from "./Manage/AdminTgPage.tsx";
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import AdminUserPage from "./Manage/AdminUserPage.tsx";
+import PetsIcon from '@mui/icons-material/Pets';
 
 // Массив страниц админ-панели
 const adminPages = [
     {name: "Зміни", component: <AdminServerPage/>, icon: <DnsIcon fontSize="large"/>},
-    {name: "Персонажі", component: <AdminCharacterPage/>, icon: <GroupIcon fontSize="large"/>},
+    {name: "Персонажі", component: <AdminCharacterPage/>, icon: <PetsIcon fontSize="large"/>},
+    {name: "Піпл", component: <AdminUserPage/>, icon: <GroupIcon fontSize="large"/>},
     {name: "Налаштування", component: <AdminSettingPage/>, icon: <SettingsIcon fontSize="large"/>},
     {name: "Графіка", component: <AdminAssetPage/>, icon: <ImageIcon fontSize="large"/>},
+    {name: "Телеграм", component: <AdminTgPage/>, icon: <TelegramIcon fontSize="large"/>},
     {name: "Логи", component: <AdminLogPage/>, icon: <HistoryIcon fontSize="large"/>},
     {name: "Палітра", component: <AdminThemePage/>, icon: <Brightness7Icon fontSize="large"/>},
 ];

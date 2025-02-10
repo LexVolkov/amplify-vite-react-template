@@ -4,13 +4,8 @@ import AdminPage from '../pages/admin/AdminPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import ControlPage from '../pages/control/ControlPage';
 import ProtectedRoute from './ProtectedRoute';
-import {Authenticator} from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-import {I18n} from 'aws-amplify/utils';
-import {translations} from '@aws-amplify/ui-react';
-
-I18n.putVocabularies(translations);
-I18n.setLanguage('ua');
+import LoginPage from "./LoginPage.tsx";
 
 export default function Router() {
     return (
@@ -22,36 +17,37 @@ export default function Router() {
                     <PublicPage/>
                 </ProtectedRoute>
             }/>
+            <Route path="/login" element={
+                <LoginPage/>
+            }/>
 
             {/* Защищённые страницы */}
             <Route
                 path="/profile"
                 element={
-                    <Authenticator>
                         <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS', 'NO GROUP']}>
                             <ProfilePage/>
                         </ProtectedRoute>
-                    </Authenticator>
                 }
             />
             <Route
                 path="/control"
                 element={
-                    <Authenticator>
-                        <ProtectedRoute groups={['GODS', 'CURATORS']}>
+
+                    <ProtectedRoute groups={['GODS', 'CURATORS']}>
                             <ControlPage/>
-                        </ProtectedRoute>
-                    </Authenticator>
+                    </ProtectedRoute>
+
                 }
             />
             <Route
                 path="/admin"
                 element={
-                    <Authenticator>
-                        <ProtectedRoute groups={['GODS']}>
+
+                    <ProtectedRoute groups={['GODS']}>
                             <AdminPage/>
-                        </ProtectedRoute>
-                    </Authenticator>
+                    </ProtectedRoute>
+
                 }
             />
         </Routes>

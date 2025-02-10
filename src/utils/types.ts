@@ -1,4 +1,13 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type IsBanedUserInfo =  {id: string, banned: boolean}
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type WebhookInfo  = {
+    url: string;
+    pending_update_count: number;
+    last_error_date?: number;
+    last_error_message?: string;
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SettingValueType =
     "string" |
@@ -44,6 +53,8 @@ interface UserState {
     fullName: string | null;
     gender: 'MALE' | 'FEMALE' | 'OTHER' | null ;
     nickname: string | null;
+    banned: boolean;
+    signOut: boolean;
 }
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error

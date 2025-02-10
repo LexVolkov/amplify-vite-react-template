@@ -1,15 +1,14 @@
-import React, {useState} from 'react';
+import React, { useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {clearUser, RootState} from '../../redux/store.ts';
-import {useAuthenticator} from '@aws-amplify/ui-react';
+import {RootState, setSignOut} from '../../redux/store.ts';
 import {Box, Button, Tab, Tabs, Typography, Paper, Avatar, Container} from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ProfileDetailsPage from "./widgets/ProfileDetailsPage.tsx";
+import AssetIcon from "../../components/AssetIcon.tsx";
 
 
 function ProfilePage() {
     const user = useSelector((state: RootState) => state.user);
-    const {signOut} = useAuthenticator();
     const [value, setValue] = useState(0);
     const dispatch = useDispatch();
 
@@ -19,11 +18,8 @@ function ProfilePage() {
     };
 
     const handleSignOut = () => {
-        dispatch(clearUser());
-        signOut();
+        dispatch(setSignOut());
     };
-
-
     return (
         <Container maxWidth="lg">
             <Paper elevation={3} sx={{p: 4, mt: 4, borderRadius: 2}}>
@@ -38,7 +34,7 @@ function ProfilePage() {
 
                 <Box sx={{display: 'flex', alignItems: 'center', mb: 4}}>
                     <Avatar sx={{width: 100, height: 100, mr: 3}}>
-                        {user?.avatar || user?.username?.charAt(0)}
+                        {<AssetIcon assetId={user?.avatar}/>}
                     </Avatar>
                     <Box>
                         <Typography variant="h5">{user?.nickname}</Typography>

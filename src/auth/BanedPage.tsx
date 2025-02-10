@@ -1,10 +1,10 @@
 import React from "react";
 import { Typography, Button, Box } from "@mui/material";
 import { motion } from "framer-motion";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import HealingIcon from '@mui/icons-material/Healing';
 import {useNavigate} from "react-router-dom";
 
-const NoAccessPage: React.FC = () => {
+const BanedPage: React.FC = () => {
     const navigate = useNavigate()
     return (
         <Box
@@ -40,7 +40,7 @@ const NoAccessPage: React.FC = () => {
                     boxShadow: "0 4px 20px rgba(255, 105, 135, 0.3)",
                 }}
             >
-                <LockOutlinedIcon sx={{ fontSize: 50, color: "#fff" }} />
+                <HealingIcon sx={{ fontSize: 50, color: "#fff" }} />
             </Box>
 
             <Typography
@@ -51,7 +51,7 @@ const NoAccessPage: React.FC = () => {
                 transition={{ delay: 0.3 }}
                 sx={{ mt: 3, fontWeight: "bold" }}
             >
-                У вас немає доступу
+                Вас забанили!
             </Typography>
 
             <Typography
@@ -62,8 +62,7 @@ const NoAccessPage: React.FC = () => {
                 transition={{ delay: 0.5 }}
                 sx={{ mt: 2, color: "#bdbdbd" }}
             >
-                На жаль, ви не маєте прав доступу до цієї сторінки. Якщо це помилка,
-                зверніться до адміністратора.
+                На жаль, вас забанили на цьому сайті. Якщо це помилка, зверніться до адміністратора.
             </Typography>
 
             <Button
@@ -94,4 +93,4 @@ const NoAccessPage: React.FC = () => {
     );
 };
 
-export default NoAccessPage;
+export default BanedPage;

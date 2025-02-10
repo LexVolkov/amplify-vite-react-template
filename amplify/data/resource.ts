@@ -1,6 +1,8 @@
 import {type ClientSchema, a, defineData} from "@aws-amplify/backend";
 import {postConfirmation} from "../auth/post-confirmation/resource";
-import {telegramBot} from "../functions/telegram-bot/resource";
+import {tgBotSendMessage} from "../functions/tg-bot-send-message/resource";
+import {apiFunction} from "../functions/api-function/resource";
+import {manageUser} from "./manage-user/resource";
 
 const accessLevel = {
     guest: 'GUEST',
@@ -80,11 +82,18 @@ const schema = a.schema({
             fullName: a.string(),
             nickname: a.string(),
             avatar: a.string(),
-            gender: a.enum(['MALE', 'FEMALE', 'OTHER'])
+            gender: a.enum(['MALE', 'FEMALE', 'OTHER']),
+            telegramId: a.integer(),
+            telegramUsername: a.string(),
+            banned: a.boolean().default(false),
+            bannedReason: a.string(),
+            bannedTime: a.string(),
         })
         .authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
             allow.ownerDefinedIn("profileOwner"),
         ]),
+
     Settings: a
         .model({
             name: a.string().required(),
@@ -163,21 +172,36 @@ const schema = a.schema({
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
         ]),
-    telegramBot: a
+    tgBotSendMessage: a
         .query()
         .arguments({
-            name: a.string(),
+            message: a.string(),
+            id: a.integer(),
         })
         .returns(a.string())
-        .handler(a.handler.function(telegramBot))
+        .handler(a.handler.function(tgBotSendMessage))
         .authorization((allow) => [
-            allow.authenticated(),
+            allow.groups([accessLevel.admin, accessLevel.moder])
         ]),
+    manageUser: a
+        .mutation()
+        .arguments({
+            userId: a.string(),
+            groupName: a.string(),
+            ban: a.boolean(),
+        })
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin])
+        ])
+        .handler(a.handler.function(manageUser))
+        .returns(a.json()),
 
 
 }).authorization((allow) => [
     allow.resource(postConfirmation),
-    allow.resource(telegramBot)
+    allow.resource(tgBotSendMessage),
+    allow.resource(apiFunction),
+    allow.resource(manageUser),
 ]);
 
 export type Schema = ClientSchema<typeof schema>;
