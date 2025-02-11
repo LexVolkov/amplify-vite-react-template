@@ -55,6 +55,7 @@ interface UserState {
     nickname: string | null;
     banned: boolean;
     signOut: boolean;
+    userProfileId: string | null;
 }
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -97,4 +98,7 @@ type Achievement = Schema["Achievement"]["type"];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Transaction = Schema["Transaction"]["type"];
 
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type CharSubscription = Schema["CharSubscription"]["type"];

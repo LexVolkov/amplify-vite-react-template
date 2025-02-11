@@ -26,6 +26,11 @@ function LoginPage() {
             if (err.message === 'User is disabled.') {
                 setIsBanned(true);
             }
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            if(err.message === 'There is already a signed in user.'){
+                navigate('/')
+            }
             console.log(err);
         }
     }

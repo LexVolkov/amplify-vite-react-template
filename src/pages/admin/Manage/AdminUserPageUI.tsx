@@ -120,7 +120,7 @@ export const AdminUserPageUI: FC<AdminUserPageUIProps> = ({
                                     <DisplayCell
                                         label="Avatar"
                                         value={
-                                            user.avatar ? <AssetIcon assetId={user.avatar} size={100}/> : null
+                                            user.avatar ? <AssetIcon fit={true} assetId={user.avatar} size={100}/> : null
                                         }
                                     />
                                 )}

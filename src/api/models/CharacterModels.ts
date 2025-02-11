@@ -36,6 +36,53 @@ export const m_listOwnCharacters = async (requestData: any): Promise<Character[]
         return [];
     }
 }
+export const m_listSubscriptionCharacters = async (requestData: any): Promise<Character[]> => {
+    const {serverId} = requestData;
+    if (!serverId) {
+        throw new Error('Не вистачає даних для запиту');
+    }
+    const {data, errors} = await client.models.Server.get(
+        {id: serverId},
+            {
+                selectionSet: ['characters.id', 'characters.nickname', 'characters.characterAvatar', 'characters.charSubscription.*']
+            },
+        )
+    ;
+    if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
+    if (data) {
+        return data.characters as Character[];
+    } else {
+        return [];
+    }
+}
+export const m_listAdminSubscriptionCharacters = async (requestData: any): Promise<Character[]> => {
+    const {serverId} = requestData;
+    if (!serverId) {
+        throw new Error('Не вистачає даних для запиту');
+    }
+    const {data, errors} = await client.models.Server.get(
+            {id: serverId},
+            {
+                selectionSet: [
+                    'characters.id',
+                    'characters.nickname',
+                    'characters.characterAvatar',
+                    'characters.charSubscription.*',
+                    'characters.charSubscription.userProfile.nickname',
+                    'characters.charSubscription.userProfile.avatar',
+                    'characters.charSubscription.userProfile.telegramId',
+                    'characters.charSubscription.userProfile.telegramUsername',
+                ]
+            },
+        )
+    ;
+    if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
+    if (data) {
+        return data.characters as Character[];
+    } else {
+        return [];
+    }
+}
 export const m_listCharacters = async (requestData: any): Promise<Character[]> => {
     const {serverId, authMode} = requestData;
     if (!serverId) {

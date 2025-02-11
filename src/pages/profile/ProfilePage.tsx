@@ -6,6 +6,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import ProfileDetailsPage from "./widgets/ProfileDetailsPage.tsx";
 import AssetIcon from "../../components/AssetIcon.tsx";
 import ProfileCharactersPage from "./widgets/ProfileCharactersPage.tsx";
+import ProfileSubscriptionPage from "./widgets/ProfileSubscriptionPage.tsx";
 
 
 function ProfilePage() {
@@ -35,7 +36,7 @@ function ProfilePage() {
 
                 <Box sx={{display: 'flex', alignItems: 'center', mb: 4}}>
                     <Avatar sx={{width: 100, height: 100, mr: 3}}>
-                        {<AssetIcon assetId={user?.avatar}/>}
+                        {<AssetIcon fit={true}  assetId={user?.avatar}/>}
                     </Avatar>
                     <Box>
                         <Typography variant="h5">{user?.nickname}</Typography>
@@ -47,7 +48,7 @@ function ProfilePage() {
                 <Tabs value={value} onChange={handleChange} aria-label="profile tabs">
                     <Tab label="Акаунт"/>
                     <Tab label="Персонажі"/>
-                    <Tab label="Статистика"/>
+                    <Tab label="Підписки"/>
                 </Tabs>
 
                 <Box sx={{mt: 3}}>
@@ -58,7 +59,7 @@ function ProfilePage() {
                         <ProfileCharactersPage/>
                     )}
                     {value === 2 && (
-                        <Typography variant="body1">В розробці.</Typography>
+                        <ProfileSubscriptionPage />
                     )}
                 </Box>
             </Paper>

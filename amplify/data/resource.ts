@@ -4,6 +4,7 @@ import {tgBotSendMessage} from "../functions/tg-bot-send-message/resource";
 import {apiFunction} from "../functions/api-function/resource";
 import {manageUser} from "./manage-user/resource";
 import {myDynamoDBFunction} from "../functions/dynamoDB-function/resource";
+import {subscriptionManager} from "./subcription-manager/resource";
 
 const accessLevel = {
     guest: 'GUEST',
@@ -197,11 +198,23 @@ const schema = a.schema({
         .arguments({
             message: a.string(),
             id: a.integer(),
+            replyMarkup: a.json(),
         })
         .returns(a.string())
         .handler(a.handler.function(tgBotSendMessage))
         .authorization((allow) => [
             allow.groups([accessLevel.admin, accessLevel.moder])
+        ]),
+    subscriptionManager: a
+        .mutation()
+        .arguments({
+            characterId: a.string(),
+            del: a.boolean(),
+        })
+        .returns(a.json())
+        .handler(a.handler.function(subscriptionManager))
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin, accessLevel.moder, accessLevel.member])
         ]),
     manageUser: a
         .mutation()
@@ -223,6 +236,7 @@ const schema = a.schema({
     allow.resource(apiFunction),
     allow.resource(manageUser),
     allow.resource(myDynamoDBFunction),
+    allow.resource(subscriptionManager),
 ]);
 
 export type Schema = ClientSchema<typeof schema>;

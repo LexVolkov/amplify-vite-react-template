@@ -15,6 +15,7 @@ import {
 } from "aws-cdk-lib/aws-apigatewayv2";
 import {myDynamoDBFunction} from "./functions/dynamoDB-function/resource";
 import {EventSourceMapping, StartingPosition} from "aws-cdk-lib/aws-lambda";
+import {subscriptionManager} from "./data/subcription-manager/resource";
 
 
 const backend = defineBackend({
@@ -24,6 +25,7 @@ const backend = defineBackend({
   tgBotSendMessage,
   apiFunction,
   myDynamoDBFunction,
+  subscriptionManager
 });
 const characterTable = backend.data.resources.tables["Character"];
 

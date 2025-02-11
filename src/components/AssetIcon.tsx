@@ -20,12 +20,14 @@ interface AnimatedIconProps {
     assetId?: string | null;
     path?: string | null;
     size?: number | null;
+    fit?: boolean | null;
 }
 
 const AssetIcon: React.FC<AnimatedIconProps> = ({
                                                     path = null,
                                                     assetId = null,
                                                     size = null,
+                                                    fit = null,
                                                 }) => {
     const user = useSelector((state: RootState) => state.user);
     const [asset, setAsset] = useState<Asset>();
@@ -183,7 +185,7 @@ const AssetIcon: React.FC<AnimatedIconProps> = ({
         return (
             <Tooltip title={error || 'No image available'}>
                 <HideImageIcon style={{
-                    maxWidth: size ? size : '100%',
+                    maxWidth : size ? size : '100%',
                     maxHeight: size ? size : '100%',
                     verticalAlign: 'middle',
                     opacity: 0.5
@@ -197,8 +199,9 @@ const AssetIcon: React.FC<AnimatedIconProps> = ({
             src={imageSrc}
             alt={asset?.name || 'Asset'}
             style={{
-                maxWidth: size ? size : '100%',
-                maxHeight: size ? size : '100%',
+                objectFit: fit ? 'cover' : 'scale-down',
+                width: size ? size : '100%',
+                height : size ? size : '100%',
                 verticalAlign: 'middle'
             }}
         />

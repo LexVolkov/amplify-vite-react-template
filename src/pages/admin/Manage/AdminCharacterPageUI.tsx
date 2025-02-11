@@ -85,7 +85,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                     onChange={value => onSetChar(character.id, 'characterAvatar', value)}
                                 />
                             ) : (
-                                <AssetIcon assetId={character.characterAvatar}/>
+                                <AssetIcon fit={true} assetId={character.characterAvatar}/>
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 2}}>

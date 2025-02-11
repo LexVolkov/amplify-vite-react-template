@@ -79,7 +79,7 @@ export const createCognitoUser = async (username: string, userId: number, firstN
         const addUserToGroupParams = {
             UserPoolId: userPoolId,
             Username: username,
-            GroupName: env.GROUP_NAME,
+            GroupName: 'KIDS',
         };
         await cognito.adminAddUserToGroup(addUserToGroupParams).promise();
 

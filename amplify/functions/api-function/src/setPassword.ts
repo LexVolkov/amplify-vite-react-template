@@ -14,7 +14,6 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 export const setPassword = async (username: string, token: string) => {
     const userPoolId = env.USER_POOL_ID || 'us-east-1_XXXXXXXX'; // Идентификатор вашего User Pool
     const clientId = env.COGNITO_CLIENT_ID || 'XXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // Идентификатор клиента Cognito
-    console.info(userPoolId, clientId, username)
 
     if (!userPoolId || !clientId) {
         throw new Error("Cognito User Pool ID or Client ID not configured");

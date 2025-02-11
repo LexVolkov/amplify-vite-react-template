@@ -93,6 +93,7 @@ const ProtectedRoute = ({groups, children}: ProtectedRouteProps) => {
                 newUserData.fullName = profile.fullName;
                 newUserData.gender = profile.gender;
                 newUserData.nickname = profile.nickname;
+                newUserData.userProfileId = profile.id;
                 dispatch(setUser(newUserData));
             }
         }

@@ -14,6 +14,7 @@ export const initialState: UserState = {
     nickname: null,
     banned: false,
     signOut: false,
+    userProfileId: null,
 };
 
 export const userSlice = createSlice({
@@ -32,6 +33,7 @@ export const userSlice = createSlice({
             state.fullName = action.payload.fullName;
             state.gender = action.payload.gender;
             state.nickname = action.payload.nickname;
+            state.userProfileId = action.payload.userProfileId;
         },
         clearUser: () => initialState,
         setSignOut: (state) => {
