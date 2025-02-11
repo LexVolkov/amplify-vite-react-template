@@ -89,7 +89,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 2}}>
-                            {editingId === character.id ? (
+                            Нік: {editingId === character.id ? (
                                 <TextField
                                     fullWidth
                                     value={character.nickname}
@@ -100,7 +100,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
-                            {editingId === character.id ? (
+                            Монети: {editingId === character.id ? (
                                 <TextField
                                     fullWidth
                                     type="number"
@@ -108,11 +108,11 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                     onChange={e => onSetChar(character.id, 'coins', e.target.value)}
                                 />
                             ) : (
-                                'Монети: ' + character.coins
+                                character.coins
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
-                            {editingId === character.id ? (
+                            Досвід: {editingId === character.id ? (
                                 <TextField
                                     fullWidth
                                     type="number"
@@ -120,11 +120,11 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                     onChange={e => onSetChar(character.id, 'experience', e.target.value)}
                                 />
                             ) : (
-                                'Досвід: ' + character.experience
+                                character.experience
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 1}} sx={{textAlign: 'right'}}>
-                            {editingId === character.id ? (
+                            Рівень:  {editingId === character.id ? (
                                 <TextField
                                     fullWidth
                                     type="number"
@@ -132,7 +132,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                                     onChange={e => onSetChar(character.id, 'level', e.target.value)}
                                 />
                             ) : (
-                                'Рівень: ' + character.level
+                                character.level
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 2}} sx={{textAlign: 'right'}}>
@@ -183,7 +183,7 @@ export const AdminCharacterPageUI: FC<AdminCharacterPageUIProps> = ({
                             )}
                         </Grid>
                         <Grid size={{xs: 12, md: 1}} sx={{textAlign: 'right'}}>
-                            {editingId === character.id ? (
+                             {editingId === character.id ? (
                                 <UserSelector
                                     isLoading={isLoadingUsers}
                                     inputUsers={users}

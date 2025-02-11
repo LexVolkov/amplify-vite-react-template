@@ -3,6 +3,7 @@ import {postConfirmation} from "../auth/post-confirmation/resource";
 import {tgBotSendMessage} from "../functions/tg-bot-send-message/resource";
 import {apiFunction} from "../functions/api-function/resource";
 import {manageUser} from "./manage-user/resource";
+import {myDynamoDBFunction} from "../functions/dynamoDB-function/resource";
 
 const accessLevel = {
     guest: 'GUEST',
@@ -26,6 +27,7 @@ const schema = a.schema({
             userProfile: a.belongsTo('UserProfile', 'userProfileId'),
             transactions: a.hasMany('Transaction', 'characterId'),
             achievements: a.hasMany('Achievement', 'characterId'),
+            charSubscription: a.hasMany('CharSubscription', 'characterId'),
         })
         .authorization((allow) => [
             allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
@@ -49,10 +51,24 @@ const schema = a.schema({
             bannedReason: a.string(),
             bannedTime: a.string(),
             characters: a.hasMany('Character', 'userProfileId'),
+            charSubscription: a.hasMany('CharSubscription', 'userProfileId'),
         })
         .authorization((allow) => [
             allow.groups([accessLevel.admin]).to(["read", "update", "delete"]),
             allow.ownerDefinedIn("profileOwner"),
+        ]),
+    CharSubscription: a
+        .model({
+            characterId: a.id(),
+            userProfileId: a.id(),
+            character: a.belongsTo('Character', 'characterId'),
+            userProfile: a.belongsTo('UserProfile', 'userProfileId'),
+        })
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
+            allow.groups([accessLevel.moder, accessLevel.member]).to(["read"]),
+            allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
         ]),
     Achievement: a
         .model({
@@ -175,6 +191,7 @@ const schema = a.schema({
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"]),
         ]),
+
     tgBotSendMessage: a
         .query()
         .arguments({
@@ -205,6 +222,7 @@ const schema = a.schema({
     allow.resource(tgBotSendMessage),
     allow.resource(apiFunction),
     allow.resource(manageUser),
+    allow.resource(myDynamoDBFunction),
 ]);
 
 export type Schema = ClientSchema<typeof schema>;
@@ -215,7 +233,7 @@ export const data = defineData({
     authorizationModes: {
         defaultAuthorizationMode: "userPool",
         apiKeyAuthorizationMode: {
-            expiresInDays: 30,
+            expiresInDays: 7,
         },
     },
 });

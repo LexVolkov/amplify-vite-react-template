@@ -20,6 +20,7 @@ export default function ControlPage() {
                     <Grid container spacing={2}>
                         <Grid size={{xs: 12, md: 6}}>
                             <ServerSelector
+                                activeOnly={true}
                                 value={selectedServerId}
                                 onChange={(serverId) => setSelectedServerId(serverId)}
                             />

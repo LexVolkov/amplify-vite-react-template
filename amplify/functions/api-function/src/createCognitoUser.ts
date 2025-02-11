@@ -2,12 +2,11 @@ import AWS from 'aws-sdk';
 import { env } from '$amplify/env/api-function';
 import {getAmplifyDataClientConfig} from "@aws-amplify/backend/function/runtime";
 import {Amplify} from "aws-amplify";
+import {generateClient} from "aws-amplify/api";
+import type {Schema} from "../../../data/resource";
 const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(
     env
 );
-import {generateClient} from "aws-amplify/api";
-import type {Schema} from "../../../data/resource";
-
 Amplify.configure(resourceConfig, libraryOptions);
 
 const cognito = new AWS.CognitoIdentityServiceProvider();

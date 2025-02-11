@@ -5,7 +5,7 @@ import { storage } from './storage/resource';
 import {tgBotSendMessage} from "./functions/tg-bot-send-message/resource";
 import {apiFunction} from "./functions/api-function/resource";
 import { Stack } from "aws-cdk-lib";
-import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import {Effect, Policy, PolicyStatement} from "aws-cdk-lib/aws-iam";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 
 import {
@@ -13,6 +13,8 @@ import {
   HttpApi,
   HttpMethod,
 } from "aws-cdk-lib/aws-apigatewayv2";
+import {myDynamoDBFunction} from "./functions/dynamoDB-function/resource";
+import {EventSourceMapping, StartingPosition} from "aws-cdk-lib/aws-lambda";
 
 
 const backend = defineBackend({
@@ -21,7 +23,42 @@ const backend = defineBackend({
   storage,
   tgBotSendMessage,
   apiFunction,
+  myDynamoDBFunction,
 });
+const characterTable = backend.data.resources.tables["Character"];
+
+const policy = new Policy(
+    Stack.of(characterTable),
+    "MyDynamoDBFunctionStreamingPolicy",
+    {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            "dynamodb:DescribeStream",
+            "dynamodb:GetRecords",
+            "dynamodb:GetShardIterator",
+            "dynamodb:ListStreams",
+          ],
+          resources: ["*"],
+        }),
+      ],
+    }
+);
+backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(policy);
+
+const mapping = new EventSourceMapping(
+    Stack.of(characterTable),
+    "MyDynamoDBFunctionTodoEventStreamMapping",
+    {
+      target: backend.myDynamoDBFunction.resources.lambda,
+      eventSourceArn: characterTable.tableStreamArn,
+      startingPosition: StartingPosition.LATEST,
+    }
+);
+
+mapping.node.addDependency(policy);
+
 const apiStack = backend.createStack("api-stack");
 
 // create a new HTTP Lambda integration

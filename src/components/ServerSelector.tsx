@@ -9,9 +9,10 @@ import {ServerSelectorUI} from "./ServerSelectorUI.tsx";
 interface ServerSelectorProps {
     value?: string;
     onChange?: (newServerId: string) => void;
+    activeOnly?: boolean;
 }
 
-export const ServerSelector: FC<ServerSelectorProps> = ({ value, onChange }) => {
+export const ServerSelector: FC<ServerSelectorProps> = ({ value, onChange, activeOnly = false }) => {
     const user = useSelector((state: RootState) => state.user);
     const [servers, setServers] = useState<Server[]>([]);
 
@@ -21,7 +22,7 @@ export const ServerSelector: FC<ServerSelectorProps> = ({ value, onChange }) => 
     });
 
     useEffect(() => {
-        serverData.makeRequest({ authMode: user.authMode }).then()
+        serverData.makeRequest({ authMode: user.authMode, activeOnly }).then()
     }, []);
 
     useEffect(() => {
