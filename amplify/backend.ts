@@ -15,7 +15,7 @@ import {
 } from "aws-cdk-lib/aws-apigatewayv2";
 import {myDynamoDBFunction} from "./functions/dynamoDB-function/resource";
 import {EventSourceMapping, StartingPosition} from "aws-cdk-lib/aws-lambda";
-import {subscriptionManager} from "./data/subcription-manager/resource";
+import {subscriptionManager} from "./data/subscription-manager/resource";
 
 
 const backend = defineBackend({

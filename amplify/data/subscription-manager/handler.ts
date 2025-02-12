@@ -1,5 +1,5 @@
 
-import {env} from '$amplify/env/dynamoDB-function';
+import {env} from "$amplify/env/subscription-manager"
 import {getAmplifyDataClientConfig} from "@aws-amplify/backend/function/runtime";
 import {Amplify} from "aws-amplify";
 import {generateClient} from "aws-amplify/api";

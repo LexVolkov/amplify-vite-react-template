@@ -4,7 +4,7 @@ import {tgBotSendMessage} from "../functions/tg-bot-send-message/resource";
 import {apiFunction} from "../functions/api-function/resource";
 import {manageUser} from "./manage-user/resource";
 import {myDynamoDBFunction} from "../functions/dynamoDB-function/resource";
-import {subscriptionManager} from "./subcription-manager/resource";
+import {subscriptionManager} from "./subscription-manager/resource";
 
 const accessLevel = {
     guest: 'GUEST',
