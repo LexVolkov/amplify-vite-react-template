@@ -12,12 +12,14 @@ const Footer = () => {
                            divider={<Divider orientation="vertical" flexItem/>}
                            spacing={2}
                     >
-                        <Chip label={"QCRPS v0.01"} variant="outlined"/>
+                        <Link href="https://t.me/qc_rps_bot" color="inherit" >
+                            <Chip  label={"QCRPS v0.01"} variant="outlined" sx={{ textDecoration: 'underline' }}/>
+                        </Link>
                         <Link href="https://t.me/+R61MPkPpiMw1MzJi" color="inherit">
-                            <Chip label={'Questy Camp'} variant="outlined"/>
+                            <Chip label={'Questy Camp'} variant="outlined" sx={{ textDecoration: 'underline' }}/>
                         </Link>
                         <Link href="https://t.me/Lex_Volkov" color="inherit">
-                            <Chip label={'Lex Volkov ©'} variant="outlined"/>
+                            <Chip label={'Lex Volkov ©'} variant="outlined" sx={{ textDecoration: 'underline' }}/>
                         </Link>
                     </Stack>
                 </Toolbar>

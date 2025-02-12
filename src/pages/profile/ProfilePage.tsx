@@ -7,16 +7,41 @@ import ProfileDetailsPage from "./widgets/ProfileDetailsPage.tsx";
 import AssetIcon from "../../components/AssetIcon.tsx";
 import ProfileCharactersPage from "./widgets/ProfileCharactersPage.tsx";
 import ProfileSubscriptionPage from "./widgets/ProfileSubscriptionPage.tsx";
+import {useSearchParams} from "react-router-dom";
+
+// Отображение параметра URL в индекс вкладки
+const tabMapping: { [key: string]: number } = {
+    details: 0,
+    characters: 1,
+    subscription: 2,
+};
+
+// Обратное отображение: индекс вкладки → значение параметра URL
+const reverseTabMapping: { [key: number]: string } = {
+    0: 'details',
+    1: 'characters',
+    2: 'subscription',
+};
 
 
 function ProfilePage() {
     const user = useSelector((state: RootState) => state.user);
-    const [value, setValue] = useState(0);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTabParam = searchParams.get('tab');
+    const initialTabIndex =
+        initialTabParam && tabMapping[initialTabParam] !== undefined
+            ? tabMapping[initialTabParam]
+            : 0;
+    const [value, setValue] = useState(initialTabIndex);
     const dispatch = useDispatch();
+
+
+
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         console.log(event)
         setValue(newValue);
+        setSearchParams({ tab: reverseTabMapping[newValue] });
     };
 
     const handleSignOut = () => {

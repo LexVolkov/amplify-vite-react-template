@@ -1,5 +1,5 @@
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import {useEffect, useState} from "react";
 import { signIn } from 'aws-amplify/auth';
 import Loader from "../components/Loader.tsx";
@@ -10,6 +10,8 @@ function LoginPage() {
     const [isBaned, setIsBanned] = useState<boolean>(false);
     const location = useLocation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const tabParam = searchParams.get('tab');
     async function handleSignIn(username: string, password: string) {
         try {
             await signIn({
@@ -29,7 +31,7 @@ function LoginPage() {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             if(err.message === 'There is already a signed in user.'){
-                navigate('/')
+                setIsSignIn(true);
             }
             console.log(err);
         }
@@ -37,7 +39,11 @@ function LoginPage() {
 
     useEffect(() => {
         if(isSignIn){
-            navigate('/')
+            if(tabParam){
+                navigate(`../profile?tab=${tabParam}`)
+            }else{
+                navigate('/')
+            }
         }
     }, [isSignIn]);
 

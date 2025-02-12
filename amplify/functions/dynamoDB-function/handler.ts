@@ -45,13 +45,20 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
                     }
                 }
-                if(userProfileId){
-                    const {errors} = await client.models.CharSubscription.create(
-                        {characterId: charId, userProfileId: userProfileId}
-                    );
+                if (userProfileId) {
+                    const {data: subscriptions} = await client.models.CharSubscription.list({
+                        filter: {
+                            characterId: {eq: charId},
+                            userProfileId: {eq: userProfileId}
+                        }
+                    });
+                    if (subscriptions.length === 0) {
+                        const {errors} = await client.models.CharSubscription.create(
+                            {characterId: charId, userProfileId: userProfileId}
+                        );
 
-                    if (errors) console.warn(errors[0]?.message || 'Помилка при запису підписки');
-
+                        if (errors) console.warn(errors[0]?.message || 'Помилка при запису підписки');
+                    }
                 }
                 return {
                     batchItemFailures: [],

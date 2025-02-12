@@ -14,9 +14,20 @@ const accessLevel = {
 }
 
 const schema = a.schema({
+    CharacterProfile: a
+        .model({
+            version: a.string(),
+            characterAvatar: a.string(),
+            characters: a.hasMany('Character', 'characterProfileId'),
+        })
+        .authorization((allow) => [
+            allow.groups([accessLevel.admin]).to(["read", "create", "update", "delete"]),
+
+        ]),
     Character: a
         .model({
             characterOwner: a.string(),
+            characterProfileId: a.id(),
             userProfileId: a.id(),
             nickname: a.string().required(),
             coins: a.integer(),
@@ -26,6 +37,7 @@ const schema = a.schema({
             serverId: a.id(),
             server: a.belongsTo('Server', 'serverId'),
             userProfile: a.belongsTo('UserProfile', 'userProfileId'),
+            characterProfile: a.belongsTo('CharacterProfile', 'characterProfileId'),
             transactions: a.hasMany('Transaction', 'characterId'),
             achievements: a.hasMany('Achievement', 'characterId'),
             charSubscription: a.hasMany('CharSubscription', 'characterId'),

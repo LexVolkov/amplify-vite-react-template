@@ -6,7 +6,7 @@ export const apiFunction = defineFunction({
         USER_POOL_ID: secret('USER_POOL_ID'),
         COGNITO_CLIENT_ID: secret('COGNITO_CLIENT_ID'),
         JWT_SECRET: secret('JWT_SECRET'),
-        FRONTEND_LOGIN_URL: secret('FRONTEND_LOGIN_URL'),
+        FRONTEND_URL: secret('FRONTEND_URL'),
         //больше не переменных добавлять
     },
     entry: './handler.ts',

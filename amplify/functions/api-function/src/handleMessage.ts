@@ -16,7 +16,7 @@ Amplify.configure(resourceConfig, libraryOptions);
 
 const client = generateClient<Schema>();
 
-const FRONTEND_LOGIN_URL = env.FRONTEND_LOGIN_URL;
+const FRONTEND_URL = env.FRONTEND_URL;
 
 export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     try {
@@ -36,7 +36,7 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
             const userExists = await checkIfUserExists(username);
             if (userExists) {
                 console.log("User already exists:", username);
-                const mes = `Привіт ${firstName} ${lastName} !`;
+                const mes = `Привіт ${firstName} ${lastName} ! Тицяй /subscription щоб подивитися свої підписки!`;
                 await  client.queries.tgBotSendMessage({
                     message: mes,
                     id: Number(chatId),
@@ -58,8 +58,7 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
                 statusCode: 200,
                 body: JSON.stringify({ message: "User created and confirmed successfully" }),
             };
-        } else if (message === "/login") {
-            //console.log("Login requested for user:", username);
+        } else if (message === "/subscription" || message === "/home") {
             // Генерируем одноразовый токен для ответа на Custom Auth Challenge
             const token = generateAuthToken(username);
             //console.log("Generated token:", token);
@@ -77,10 +76,12 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
                 replyMarkup: {}
             };
             messageParams.replyMarkup = null;
-            const loginUrl = `${FRONTEND_LOGIN_URL}?username=${encodeURIComponent(username)}&token=${encodeURIComponent(token)}`;
+            const tabLoc = message === "/subscription" ? "&tab=subscription" : "";
+            const auth = message === "/subscription" ? `login/?username=${encodeURIComponent(username)}&token=${encodeURIComponent(token)}` : "";
+            const loginUrl = `${FRONTEND_URL}${auth}${tabLoc}`;
             console.log("Login URL:", loginUrl);
 
-            if(FRONTEND_LOGIN_URL.includes('localhost')){
+            if(FRONTEND_URL.includes('localhost')){
                 messageParams.text = loginUrl;
             }else{
                 // Формируем текст сообщения и клавиатуру с кнопкой
