@@ -36,6 +36,7 @@ export default function CharControlPage({selectedServerId, searchQuery}:CharCont
             setCharacters([]);
             charsData.makeRequest({ serverId: selectedServerId }).then();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedServerId]);
 
     useEffect(() => {
@@ -84,6 +85,7 @@ export default function CharControlPage({selectedServerId, searchQuery}:CharCont
                 addTransaction.makeRequest(transactionData).then();
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [charsUpdate.result]);
 
     const handleAddAchievement = async (character: Character) => {

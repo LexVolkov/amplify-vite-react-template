@@ -46,6 +46,7 @@ export default function AdminCharacterPage() {
     useEffect(() => {
         userData.makeRequest({}).then()
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -59,6 +60,7 @@ export default function AdminCharacterPage() {
             setCharacters([]);
             charsData.makeRequest({serverId: selectedServerId}).then();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedServerId]);
 
     useEffect(() => {
@@ -133,6 +135,7 @@ export default function AdminCharacterPage() {
                 setEditingId(null);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [charsUpdate.result]);
 
     useEffect(() => {
@@ -184,6 +187,7 @@ export default function AdminCharacterPage() {
             const charsDeleted: Character = charsDelete.result;
             setCharacters(characters.filter(char => char.id !== charsDeleted.id));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [charsDelete.result]);
 
     const handleAddCharacter = async () => {
@@ -213,6 +217,7 @@ export default function AdminCharacterPage() {
             const newCharacter: Character = charsCreate.result;
             setCharacters([newCharacter, ...characters]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [charsCreate.result]);
 
     const handleAddAchievement = async (character: Character) => {
