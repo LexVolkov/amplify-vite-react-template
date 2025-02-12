@@ -4,6 +4,7 @@ import type { Schema } from "../../../../amplify/data/resource.ts";
 import { generateClient } from "aws-amplify/data";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@mui/material";
+import {useError} from "../../../utils/setError.tsx";
 
 const client = generateClient<Schema>();
 
@@ -38,7 +39,7 @@ function AdminServerPage() {
     const [servers, setServers] = useState<Server[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
-
+    const setError = useError();
 
     useEffect(() => {
         const subscription = client.models.Server.observeQuery().subscribe({
@@ -96,6 +97,22 @@ function AdminServerPage() {
 // @ts-expect-error
     const deleteServer = async (serverData: ServerData) => {
         setIsLoading(true);
+        try {
+            const {data, errors} = await client.models.Server.get(
+                {id: serverData.id},
+                {
+                    selectionSet: ['characters.id']
+                }
+            );
+            if (errors) throw new Error(errors[0]?.message || 'Помилка при отриманні данних персонажів');
+            if (data && data.characters.length > 0) {
+                setError('#011:01','Не можна видалити сервер, який містить персонажів');
+
+                return;
+            }
+        } finally {
+            setIsLoading(false);
+        }
         try {
             await client.models.Server.delete({ id: serverData.id });
         } finally {

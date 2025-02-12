@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid2';
 import {CategorySelector} from "./widgets/CategorySelector.tsx";
 import {TagsSelector} from "./widgets/TagsSelector.tsx";
 import {AssetSelector} from "./widgets/AssetSelector.tsx";
-
+//TODO если загрузить картинку, но не сохранять, она теряется
 function AdminAssetPage() {
     const [selectedSubCategory, setSelectedSubCategory] = useState<string>('');
     const [selectedAssetTagIds, setSelectedAssetTagIds] = useState<string[]>([]);

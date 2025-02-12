@@ -12,7 +12,7 @@ const accessLevel = {
     moder: 'CURATORS',
     member: 'KIDS'
 }
-
+//TODO вынести все таблицы в отдельные файлы
 const schema = a.schema({
     CharacterProfile: a
         .model({

@@ -176,6 +176,7 @@ export default function AdminCharacterPage() {
     }, [updateAchievement.result]);
 
     const handleDelete = async (id: string) => {
+        //TODO удалять также подписки и все связанные с ними данные каскадно
         charsDelete.makeRequest({id}).then();
     };
     useEffect(() => {

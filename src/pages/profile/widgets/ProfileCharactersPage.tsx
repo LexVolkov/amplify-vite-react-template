@@ -5,7 +5,7 @@ import {RootState} from "../../../redux/store.ts";
 import useRequest from "../../../api/useRequest.ts";
 import {m_listOwnCharacters} from "../../../api/models/CharacterModels.ts";
 import CharacterList from "../../../components/CharacterList.tsx";
-
+//TODO если нет персонажей, писать что нет персонажей
 function ProfileCharactersPage() {
     const user = useSelector((state: RootState) => state.user);
     const [chars, setChars] = useState<Character[]>([]);

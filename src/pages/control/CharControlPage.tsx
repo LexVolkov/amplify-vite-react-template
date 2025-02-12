@@ -19,6 +19,7 @@ interface CharControlPageProps {
     selectedServerId: string | null;
     searchQuery: string | '';
 }
+//TODO причина для добавления или отнимания?
 export default function CharControlPage({selectedServerId, searchQuery}:CharControlPageProps) {
     const user = useSelector((state: RootState) => state.user);
     const [characters, setCharacters] = useState<Character[]>([]);
