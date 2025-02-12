@@ -43,7 +43,7 @@ const TelegramSendMessageUI: React.FC<TelegramMessageUIProps> = ({
         <Container maxWidth="md" sx={{ mt: 4 }}>
             <Paper sx={{ p: 3 }}>
                 <Typography variant="h4" gutterBottom>
-                    Telegram Message Sender
+                    Telegram Message Sender UI
                 </Typography>
 
                 {error && (
@@ -96,7 +96,7 @@ const TelegramSendMessageUI: React.FC<TelegramMessageUIProps> = ({
                             value={replyMarkup}
                             onChange={(e) => onReplyMarkupChange(e.target.value)}
                             multiline
-                            rows={6}
+                            rows={9}
                             placeholder='{"keyboard": [["Button1", "Button2"]]}'
                         />
                     </Grid>
