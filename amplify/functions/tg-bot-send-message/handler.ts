@@ -5,7 +5,6 @@ export const handler: Schema["tgBotSendMessage"]["functionHandler"] = async (eve
     const url = `https://api.telegram.org/bot${env.T_BOT_TOKEN}/sendMessage`;
     const { id, message, replyMarkup } = event.arguments
     const rp = replyMarkup ? replyMarkup: null;
-    console.log(`URL: ${url}, ID: ${id}, Message: ${message}`);
     const payload: any = {
         chat_id: id,
         text: message,
@@ -14,7 +13,7 @@ export const handler: Schema["tgBotSendMessage"]["functionHandler"] = async (eve
         payload.reply_markup = rp;
     }
 
-    console.log(`id: ${id}, message: ${message}, replyMarkup: ${rp}`);
+    console.log(`URL: ${url}, id: ${id}, message: ${message}, replyMarkup: ${rp}`);
 
     try {
         const response = await fetch(url, {

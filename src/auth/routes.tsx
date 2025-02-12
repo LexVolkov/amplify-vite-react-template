@@ -6,6 +6,7 @@ import ControlPage from '../pages/control/ControlPage';
 import ProtectedRoute from './ProtectedRoute';
 import '@aws-amplify/ui-react/styles.css';
 import LoginPage from "./LoginPage.tsx";
+import TelegramWebhook from "../pages/admin/Manage/widgets/TelegramWebhook.tsx";
 
 export default function Router() {
     return (
@@ -16,6 +17,9 @@ export default function Router() {
                 <ProtectedRoute groups={['GODS', 'CURATORS', 'KIDS', 'GUEST', 'NO GROUP']}>
                     <PublicPage/>
                 </ProtectedRoute>
+            }/>
+            <Route path="/tg" element={
+                 <TelegramWebhook/>
             }/>
             <Route path="/login" element={
                 <LoginPage/>

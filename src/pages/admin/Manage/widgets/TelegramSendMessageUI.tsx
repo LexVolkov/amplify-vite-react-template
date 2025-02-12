@@ -14,27 +14,31 @@ interface TelegramMessageUIProps {
     botToken: string;
     chatId: number;
     message: string;
+    replyMarkup: string;
     loading: boolean;
     error: string | null;
     sendResult: string | null;
     onBotTokenChange: (value: string) => void;
     onChatIdChange: (value: number) => void;
     onMessageChange: (value: string) => void;
+    onReplyMarkupChange: (value: string) => void;
     onSendMessage: () => void;
 }
 
 const TelegramSendMessageUI: React.FC<TelegramMessageUIProps> = ({
-                                                                 botToken,
-                                                                 chatId,
-                                                                 message,
-                                                                 loading,
-                                                                 error,
-                                                                 sendResult,
-                                                                 onBotTokenChange,
-                                                                 onChatIdChange,
-                                                                 onMessageChange,
-                                                                 onSendMessage
-                                                             }) => {
+                                                                     botToken,
+                                                                     chatId,
+                                                                     message,
+                                                                     replyMarkup,
+                                                                     loading,
+                                                                     error,
+                                                                     sendResult,
+                                                                     onBotTokenChange,
+                                                                     onChatIdChange,
+                                                                     onMessageChange,
+                                                                     onReplyMarkupChange,
+                                                                     onSendMessage
+                                                                 }) => {
     return (
         <Container maxWidth="md" sx={{ mt: 4 }}>
             <Paper sx={{ p: 3 }}>
@@ -81,6 +85,19 @@ const TelegramSendMessageUI: React.FC<TelegramMessageUIProps> = ({
                             onChange={(e) => onMessageChange(e.target.value)}
                             multiline
                             rows={4}
+                        />
+                    </Grid>
+
+                    {/* Новое поле для ввода replyMarkup в формате JSON */}
+                    <Grid item xs={12}>
+                        <TextField
+                            fullWidth
+                            label="Reply Markup (JSON)"
+                            value={replyMarkup}
+                            onChange={(e) => onReplyMarkupChange(e.target.value)}
+                            multiline
+                            rows={6}
+                            placeholder='{"keyboard": [["Button1", "Button2"]]}'
                         />
                     </Grid>
 

@@ -1,9 +1,9 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { createCognitoUser } from "./createCognitoUser";
-import { generateAuthToken } from "./authService";
-import { env } from "$amplify/env/api-function";
-import { checkIfUserExists } from "./checkIfUserExists";
-import { setPassword } from "./setPassword";
+import {APIGatewayProxyEventV2, APIGatewayProxyResultV2} from "aws-lambda";
+import {createCognitoUser} from "./createCognitoUser";
+import {generateAuthToken} from "./authService";
+import {env} from "$amplify/env/api-function";
+import {checkIfUserExists} from "./checkIfUserExists";
+import {setPassword} from "./setPassword";
 import {getAmplifyDataClientConfig} from "@aws-amplify/backend/function/runtime";
 import {Amplify} from "aws-amplify";
 import {generateClient} from "aws-amplify/api";
@@ -37,26 +37,26 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
             if (userExists) {
                 console.log("User already exists:", username);
                 const mes = `Привіт ${firstName} ${lastName} ! Тицяй /subscription щоб подивитися свої підписки!`;
-                await  client.queries.tgBotSendMessage({
+                await client.queries.tgBotSendMessage({
                     message: mes,
                     id: Number(chatId),
                 })
                 return {
                     statusCode: 200,
-                    body: JSON.stringify({ message: "User already exists" }),
+                    body: JSON.stringify({message: "User already exists"}),
                 };
             }
 
             const user = await createCognitoUser(username, userId, firstName, lastName, tgUsername);
             console.log("User created and confirmed successfully:", user);
             const mes = "Вас зареєстровано.";
-            await  client.queries.tgBotSendMessage({
+            await client.queries.tgBotSendMessage({
                 message: mes,
                 id: Number(chatId),
             })
             return {
                 statusCode: 200,
-                body: JSON.stringify({ message: "User created and confirmed successfully" }),
+                body: JSON.stringify({message: "User created and confirmed successfully"}),
             };
         } else if (message === "/subscription" || message === "/home") {
             // Генерируем одноразовый токен для ответа на Custom Auth Challenge
@@ -81,9 +81,9 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
             const loginUrl = `${FRONTEND_URL}${auth}${tabLoc}`;
             console.log("Login URL:", loginUrl);
 
-            if(FRONTEND_URL.includes('localhost')){
+            if (FRONTEND_URL.includes('localhost')) {
                 messageParams.text = loginUrl;
-            }else{
+            } else {
                 // Формируем текст сообщения и клавиатуру с кнопкой
                 messageParams.text = "Тиць для авторизації на сайті:";
                 messageParams.replyMarkup = {
@@ -97,24 +97,31 @@ export async function handleMessage(event: APIGatewayProxyEventV2): Promise<APIG
                     ],
                 };
             }
-            console.log('messageParams: ',messageParams)
-
-            await  client.queries.tgBotSendMessage({
-                message: messageParams.text,
-                id: chatId,
-                replyMarkup: messageParams.replyMarkup
-            })
+            console.log('messageParams: ', messageParams)
+            try {
+              const { errors} =   await client.queries.tgBotSendMessage({
+                    message: messageParams.text,
+                    id: chatId,
+                    replyMarkup: JSON.stringify(messageParams.replyMarkup)
+                })
+                if(errors){
+                    if (errors) console.error(errors[0]?.message || 'Помилка відправки повідомлення');
+                }
+            } catch (e) {
+                console.error(e);
+                return JSON.stringify(e).toString();
+            }
             console.log("Login message sent successfully");
 
             return {
                 statusCode: 200,
-                body: JSON.stringify({ message: "Login link sent successfully" }),
+                body: JSON.stringify({message: "Login link sent successfully"}),
             };
         }
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: "Команду не знайдено" }),
+            body: JSON.stringify({message: "Команду не знайдено"}),
         };
     } catch (error) {
         console.error("Error processing message:", error);
